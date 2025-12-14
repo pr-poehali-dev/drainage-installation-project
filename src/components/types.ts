@@ -31,13 +31,15 @@ export interface Product {
 
 export interface Notification {
   id: string;
-  type: 'order' | 'payment' | 'delivery' | 'system' | 'chat' | 'location' | 'photo';
+  type: 'order' | 'payment' | 'delivery' | 'system' | 'chat' | 'location' | 'photo' | 'rating' | 'document' | 'inventory';
   title: string;
   message: string;
   from: string;
   timestamp: string;
   read: boolean;
   orderId?: string;
+  priority?: 'low' | 'medium' | 'high';
+  actionUrl?: string;
 }
 
 export interface ChatMessage {
@@ -53,11 +55,35 @@ export interface ChatMessage {
 export interface Document {
   id: string;
   orderId: string;
-  type: 'contract' | 'act' | 'invoice' | 'other';
+  type: 'contract' | 'act' | 'invoice' | 'other' | 'contract_installer' | 'passport';
   name: string;
   url: string;
   uploadedBy: string;
   uploadDate: string;
+  status?: 'draft' | 'sent' | 'signed';
+  signedDate?: string;
+  recipientEmail?: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  reserved: number;
+  available: number;
+  minStock: number;
+  location: string;
+  lastUpdated: string;
+}
+
+export interface Rating {
+  id: string;
+  orderId: string;
+  fromRole: 'client' | 'contractor' | 'installer';
+  toRole: 'contractor' | 'installer' | 'supplier';
+  rating: number;
+  comment: string;
+  date: string;
 }
 
 export interface FinancialStats {
@@ -151,6 +177,35 @@ export interface Installer {
   avitoUrl?: string;
   verified: boolean;
   lastActive: string;
+  passportData?: PassportData;
+  contractSigned?: boolean;
+  inn?: string;
+  bankAccount?: string;
+}
+
+export interface PassportData {
+  series: string;
+  number: string;
+  issuedBy: string;
+  issuedDate: string;
+  departmentCode: string;
+  birthDate: string;
+  birthPlace: string;
+  address: string;
+  scanUrl?: string;
+}
+
+export interface ClientData {
+  orderId: string;
+  fullName: string;
+  phone: string;
+  email?: string;
+  passportSeries?: string;
+  passportNumber?: string;
+  address: string;
+  inn?: string;
+  companyName?: string;
+  isLegalEntity: boolean;
 }
 
 export interface InstallerReview {

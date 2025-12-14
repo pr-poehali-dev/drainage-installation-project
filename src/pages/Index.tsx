@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig, ChatMessage, Document, FinancialStats, InstallerLocation, WorkPhoto } from '@/components/types';
+import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig, ChatMessage, Document, FinancialStats, InstallerLocation, WorkPhoto, PassportData, ClientData, Rating, InventoryItem } from '@/components/types';
 import DashboardTab from '@/components/DashboardTab';
 import OrdersTab from '@/components/OrdersTab';
 import CatalogTab from '@/components/CatalogTab';
@@ -18,6 +18,9 @@ import DocumentsPanel from '@/components/documents/DocumentsPanel';
 import AssignInstallerDialog from '@/components/orders/AssignInstallerDialog';
 import InstallationCalendar from '@/components/calendar/InstallationCalendar';
 import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
+import PushNotification from '@/components/notifications/PushNotification';
+import RatingDialog from '@/components/rating/RatingDialog';
+import InventoryManager from '@/components/inventory/InventoryManager';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -92,6 +95,18 @@ const Index = () => {
     { id: 'PHT-006', orderId: 'AVT-2303', installerId: 'INS-005', stage: 'during', photoUrl: '/photos/during-3.jpg', caption: 'Процесс установки', timestamp: '12:15' },
     { id: 'PHT-007', orderId: 'AVT-2303', installerId: 'INS-005', stage: 'after', photoUrl: '/photos/after-1.jpg', caption: 'Готовый результат', timestamp: '15:20' },
     { id: 'PHT-008', orderId: 'AVT-2303', installerId: 'INS-005', stage: 'after', photoUrl: '/photos/after-2.jpg', caption: 'Вид с другой стороны', timestamp: '15:25' },
+  ]);
+
+  const [pushNotifications, setPushNotifications] = useState<Notification[]>([]);
+  const [isRatingDialogOpen, setIsRatingDialogOpen] = useState(false);
+  const [ratingTarget, setRatingTarget] = useState<{ orderId: string; name: string; role: 'contractor' | 'installer' | 'supplier' } | null>(null);
+  const [ratings, setRatings] = useState<Rating[]>([]);
+  
+  const [inventory, setInventory] = useState<InventoryItem[]>([
+    { id: 'INV-001', productId: 'P001', quantity: 500, reserved: 120, available: 380, minStock: 100, location: 'Склад А, стеллаж 1', lastUpdated: '14:30' },
+    { id: 'INV-002', productId: 'P002', quantity: 350, reserved: 80, available: 270, minStock: 100, location: 'Склад А, стеллаж 2', lastUpdated: '14:30' },
+    { id: 'INV-003', productId: 'P003', quantity: 150, reserved: 60, available: 90, minStock: 50, location: 'Склад Б, секция 1', lastUpdated: '14:30' },
+    { id: 'INV-004', productId: 'P004', quantity: 80, reserved: 25, available: 55, minStock: 30, location: 'Склад Б, секция 2', lastUpdated: '14:30' },
   ]);
 
   const [installers, setInstallers] = useState<Installer[]>([
@@ -220,6 +235,80 @@ const Index = () => {
       title: 'Обновление геолокации',
       description: 'Данные о местоположении обновлены',
     });
+  };
+
+  const handleSubmitRating = (rating: number, comment: string) => {
+    if (!ratingTarget) return;
+
+    const newRating: Rating = {
+      id: `RAT-${ratings.length + 1}`,
+      orderId: ratingTarget.orderId,
+      fromRole: 'contractor',
+      toRole: ratingTarget.role,
+      rating,
+      comment,
+      date: new Date().toLocaleDateString('ru'),
+    };
+
+    setRatings([...ratings, newRating]);
+
+    const newNotification: Notification = {
+      id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+      type: 'rating',
+      title: 'Оценка отправлена',
+      message: `Вы оценили работу ${ratingTarget.name} на ${rating} из 5`,
+      from: 'Вы',
+      timestamp: 'Только что',
+      read: true,
+      orderId: ratingTarget.orderId,
+    };
+    setNotifications([newNotification, ...notifications]);
+
+    toast({
+      title: 'Спасибо за оценку!',
+      description: `Ваш отзыв поможет улучшить качество сервиса`,
+    });
+  };
+
+  const simulateInstallerArrival = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order || !order.installerName) return;
+
+    const location = installerLocations.find(l => l.orderId === orderId);
+    if (location && location.status === 'on_way') {
+      setInstallerLocations(installerLocations.map(l =>
+        l.orderId === orderId
+          ? { ...l, status: 'arrived', arrivalTime: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }) }
+          : l
+      ));
+
+      const pushNotif: Notification = {
+        id: `PUSH-${Date.now()}`,
+        type: 'location',
+        title: '🚗 Монтажник прибыл!',
+        message: `${order.installerName} прибыл на объект по адресу ${order.address}`,
+        from: 'Система трекинга',
+        timestamp: 'Только что',
+        read: false,
+        orderId,
+        priority: 'high',
+      };
+      
+      setPushNotifications([...pushNotifications, pushNotif]);
+      setNotifications([pushNotif, ...notifications]);
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Монтажник прибыл на объект!', {
+          body: `${order.installerName} начинает работу по адресу ${order.address}`,
+          icon: '/favicon.ico',
+        });
+      }
+
+      toast({
+        title: '🚗 Монтажник прибыл на объект!',
+        description: `${order.installerName} начинает работу`,
+      });
+    }
   };
 
   const handleRequestPhoto = (stage: WorkPhoto['stage']) => {
@@ -482,6 +571,15 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => simulateInstallerArrival('AVT-2304')}
+                className="hidden md:flex"
+              >
+                <Icon name="Bell" size={16} className="mr-2" />
+                Тест Push
+              </Button>
               <Button variant="outline" onClick={() => setIsPriceManagementOpen(true)}>
                 <Icon name="DollarSign" size={18} className="mr-2" />
                 Прайсы
@@ -595,9 +693,35 @@ const Index = () => {
         />
       )}
 
+      {ratingTarget && (
+        <RatingDialog
+          isOpen={isRatingDialogOpen}
+          onOpenChange={setIsRatingDialogOpen}
+          orderId={ratingTarget.orderId}
+          targetName={ratingTarget.name}
+          targetRole={ratingTarget.role}
+          onSubmit={handleSubmitRating}
+        />
+      )}
+
+      {pushNotifications.map((notif) => (
+        <PushNotification
+          key={notif.id}
+          notification={notif}
+          onClose={() => setPushNotifications(pushNotifications.filter(n => n.id !== notif.id))}
+          onAction={() => {
+            if (notif.orderId) {
+              setSelectedOrderForDetails(notif.orderId);
+              setIsOrderDetailsOpen(true);
+            }
+            setPushNotifications(pushNotifications.filter(n => n.id !== notif.id));
+          }}
+        />
+      ))}
+
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-[900px]">
+          <TabsList className="grid w-full grid-cols-6 lg:w-full lg:max-w-[1000px]">
             <TabsTrigger value="dashboard" className="gap-1 md:gap-2">
               <Icon name="LayoutDashboard" size={16} />
               <span className="hidden sm:inline">Дашборд</span>
@@ -609,6 +733,10 @@ const Index = () => {
             <TabsTrigger value="calendar" className="gap-1 md:gap-2">
               <Icon name="CalendarDays" size={16} />
               <span className="hidden sm:inline">Календарь</span>
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="gap-1 md:gap-2">
+              <Icon name="Warehouse" size={16} />
+              <span className="hidden sm:inline">Склад</span>
             </TabsTrigger>
             <TabsTrigger value="catalog" className="gap-1 md:gap-2">
               <Icon name="ShoppingCart" size={16} />
@@ -667,6 +795,30 @@ const Index = () => {
               onOrderClick={(orderId) => {
                 setActiveTab('orders');
                 toast({ title: 'Переход к заказу', description: `Заказ ${orderId}` });
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <InventoryManager
+              inventory={inventory}
+              products={products}
+              onReorder={(itemId) => {
+                toast({
+                  title: 'Заказ отправлен поставщику',
+                  description: 'Товар будет доставлен в течение 3-5 дней',
+                });
+                
+                const newNotif: Notification = {
+                  id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+                  type: 'inventory',
+                  title: 'Заказ материалов',
+                  message: 'Отправлен заказ поставщику на пополнение склада',
+                  from: 'Вы',
+                  timestamp: 'Только что',
+                  read: true,
+                };
+                setNotifications([newNotif, ...notifications]);
               }}
             />
           </TabsContent>
