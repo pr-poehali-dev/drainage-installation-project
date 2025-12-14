@@ -8,6 +8,7 @@ import Catalog from "./pages/Catalog";
 import AvitoImport from "./pages/AvitoImport";
 import Payments from "./pages/Payments";
 import Documents from "./pages/Documents";
+import DeliveryPage from "./pages/Delivery";
 import NotFound from "./pages/NotFound";
 import Icon from "./components/ui/icon";
 
@@ -20,6 +21,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { name: 'Главная', path: '/', icon: 'layout-dashboard' },
     { name: 'Каталог', path: '/catalog', icon: 'package' },
     { name: 'Авито', path: '/avito', icon: 'external-link' },
+    { name: 'Доставка', path: '/delivery', icon: 'truck' },
     { name: 'Платежи', path: '/payments', icon: 'wallet' },
     { name: 'Документы', path: '/documents', icon: 'file-text' }
   ];
@@ -95,6 +97,7 @@ const App = () => (
             <Route path="/" element={<Dashboard />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/avito" element={<AvitoImport />} />
+            <Route path="/delivery" element={<DeliveryPage />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="*" element={<NotFound />} />
