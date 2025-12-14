@@ -30,9 +30,11 @@ export interface Product {
   manufacturer?: string;
 }
 
+export type NotificationTypes = 'order' | 'payment' | 'delivery' | 'system' | 'chat' | 'location' | 'photo' | 'rating' | 'document' | 'inventory';
+
 export interface Notification {
   id: string;
-  type: 'order' | 'payment' | 'delivery' | 'system' | 'chat' | 'location' | 'photo' | 'rating' | 'document' | 'inventory';
+  type: NotificationTypes;
   title: string;
   message: string;
   from: string;
