@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Separator } from '@/components/ui/separator';
+import { toast } from '@/hooks/use-toast';
 import { Product } from './types';
 
 interface CatalogTabProps {
@@ -9,6 +11,49 @@ interface CatalogTabProps {
 }
 
 const CatalogTab = ({ products }: CatalogTabProps) => {
+  const [area, setArea] = useState<number>(0);
+  const [gutterType, setGutterType] = useState('metal');
+  const [snowGuardType, setSnowGuardType] = useState('tube');
+  const [cartItems, setCartItems] = useState<string[]>([]);
+
+  const calculateEstimate = () => {
+    const baseArea = area || 100;
+    const gutterPrice = gutterType === 'metal' ? 1200 : 850;
+    const snowGuardPrice = snowGuardType === 'tube' ? 2500 : 1800;
+    
+    const materials = Math.round(baseArea * gutterPrice * 0.13);
+    const installation = Math.round(materials * 0.29);
+    const delivery = 8000;
+    
+    return { materials, installation, delivery, total: materials + installation + delivery };
+  };
+
+  const estimate = calculateEstimate();
+
+  const handleAddToEstimate = (productName: string) => {
+    setCartItems([...cartItems, productName]);
+    toast({
+      title: 'Добавлено в смету!',
+      description: `${productName} добавлен в калькулятор`,
+    });
+  };
+
+  const handleCreateEstimate = () => {
+    if (area === 0) {
+      toast({
+        title: 'Ошибка',
+        description: 'Укажите площадь кровли',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Смета создана!',
+      description: `Общая стоимость: ${estimate.total.toLocaleString()} ₽. Смета отправлена клиенту.`,
+    });
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -41,7 +86,11 @@ const CatalogTab = ({ products }: CatalogTabProps) => {
                             <p className="text-2xl font-bold text-primary">{product.price} ₽</p>
                             <p className="text-xs text-muted-foreground">за {product.unit}</p>
                           </div>
-                          <Button size="sm" className="gap-1">
+                          <Button 
+                            size="sm" 
+                            className="gap-1"
+                            onClick={() => handleAddToEstimate(product.name)}
+                          >
                             <Icon name="Plus" size={14} />
                             В смету
                           </Button>
@@ -70,22 +119,32 @@ const CatalogTab = ({ products }: CatalogTabProps) => {
                 type="number" 
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
                 placeholder="Введите площадь"
+                value={area || ''}
+                onChange={(e) => setArea(Number(e.target.value))}
               />
             </div>
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Тип водостока</label>
-              <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
-                <option>Металлический</option>
-                <option>Пластиковый</option>
+              <select 
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                value={gutterType}
+                onChange={(e) => setGutterType(e.target.value)}
+              >
+                <option value="metal">Металлический</option>
+                <option value="plastic">Пластиковый</option>
               </select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Снегозадержатели</label>
-              <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
-                <option>Трубчатые</option>
-                <option>Уголковые</option>
+              <select 
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+                value={snowGuardType}
+                onChange={(e) => setSnowGuardType(e.target.value)}
+              >
+                <option value="tube">Трубчатые</option>
+                <option value="corner">Уголковые</option>
               </select>
             </div>
 
@@ -94,24 +153,24 @@ const CatalogTab = ({ products }: CatalogTabProps) => {
             <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-4 rounded-lg space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Материалы:</span>
-                <span className="font-semibold">156 000 ₽</span>
+                <span className="font-semibold">{estimate.materials.toLocaleString()} ₽</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Монтаж:</span>
-                <span className="font-semibold">45 000 ₽</span>
+                <span className="font-semibold">{estimate.installation.toLocaleString()} ₽</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Доставка:</span>
-                <span className="font-semibold">8 000 ₽</span>
+                <span className="font-semibold">{estimate.delivery.toLocaleString()} ₽</span>
               </div>
               <Separator />
               <div className="flex justify-between items-center">
                 <span className="font-bold">Итого:</span>
-                <span className="text-2xl font-bold text-primary">209 000 ₽</span>
+                <span className="text-2xl font-bold text-primary">{estimate.total.toLocaleString()} ₽</span>
               </div>
             </div>
 
-            <Button className="w-full gap-2" size="lg">
+            <Button className="w-full gap-2" size="lg" onClick={handleCreateEstimate}>
               <Icon name="FileText" size={16} />
               Создать смету
             </Button>

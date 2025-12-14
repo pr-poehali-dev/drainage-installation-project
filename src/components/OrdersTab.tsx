@@ -5,7 +5,7 @@ import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 import { Order, getStatusConfig } from './types';
 
 interface OrdersTabProps {
@@ -16,6 +16,18 @@ interface OrdersTabProps {
   setAvitoUrl: (url: string) => void;
   importLoading: boolean;
   handleImportFromAvito: () => void;
+  isNewOrderDialogOpen: boolean;
+  setIsNewOrderDialogOpen: (open: boolean) => void;
+  newOrderClient: string;
+  setNewOrderClient: (value: string) => void;
+  newOrderPhone: string;
+  setNewOrderPhone: (value: string) => void;
+  newOrderAddress: string;
+  setNewOrderAddress: (value: string) => void;
+  newOrderProduct: string;
+  setNewOrderProduct: (value: string) => void;
+  handleCreateNewOrder: () => void;
+  handleOrderAction: (orderId: string) => void;
 }
 
 const OrdersTab = ({
@@ -26,6 +38,18 @@ const OrdersTab = ({
   setAvitoUrl,
   importLoading,
   handleImportFromAvito,
+  isNewOrderDialogOpen,
+  setIsNewOrderDialogOpen,
+  newOrderClient,
+  setNewOrderClient,
+  newOrderPhone,
+  setNewOrderPhone,
+  newOrderAddress,
+  setNewOrderAddress,
+  newOrderProduct,
+  setNewOrderProduct,
+  handleCreateNewOrder,
+  handleOrderAction,
 }: OrdersTabProps) => {
   return (
     <div className="animate-fade-in">
@@ -119,10 +143,78 @@ const OrdersTab = ({
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-              <Button className="gap-2">
-                <Icon name="Plus" size={16} />
-                Новый заказ
-              </Button>
+              <Dialog open={isNewOrderDialogOpen} onOpenChange={setIsNewOrderDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Icon name="Plus" size={16} />
+                    Новый заказ
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <Icon name="Plus" size={20} className="text-green-600" />
+                      </div>
+                      Создать новый заказ
+                    </DialogTitle>
+                    <DialogDescription>
+                      Введите данные клиента и информацию о заказе
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="client">ФИО клиента</Label>
+                      <Input
+                        id="client"
+                        placeholder="Иванов Иван Иванович"
+                        value={newOrderClient}
+                        onChange={(e) => setNewOrderClient(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Телефон</Label>
+                      <Input
+                        id="phone"
+                        placeholder="+7 999 123-45-67"
+                        value={newOrderPhone}
+                        onChange={(e) => setNewOrderPhone(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Адрес объекта</Label>
+                      <Input
+                        id="address"
+                        placeholder="ул. Пушкина, д. 10"
+                        value={newOrderAddress}
+                        onChange={(e) => setNewOrderAddress(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="product">Описание работ</Label>
+                      <Textarea
+                        id="product"
+                        placeholder="Водосточная система + Снегозадержатели"
+                        value={newOrderProduct}
+                        onChange={(e) => setNewOrderProduct(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsNewOrderDialogOpen(false)}
+                    >
+                      Отмена
+                    </Button>
+                    <Button onClick={handleCreateNewOrder} className="gap-2">
+                      <Icon name="Plus" size={16} />
+                      Создать заказ
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </CardHeader>
@@ -173,7 +265,12 @@ const OrdersTab = ({
                             {order.amount > 0 ? `${order.amount.toLocaleString()} ₽` : 'Расчет...'}
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" className="mt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-2"
+                          onClick={() => handleOrderAction(order.id)}
+                        >
                           Подробнее
                         </Button>
                       </div>

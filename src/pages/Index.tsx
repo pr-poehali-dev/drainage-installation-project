@@ -3,6 +3,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { Order, Product } from '@/components/types';
 import DashboardTab from '@/components/DashboardTab';
@@ -21,6 +25,13 @@ const Index = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [avitoUrl, setAvitoUrl] = useState('');
   const [importLoading, setImportLoading] = useState(false);
+  const [isNewOrderDialogOpen, setIsNewOrderDialogOpen] = useState(false);
+  const [newOrderClient, setNewOrderClient] = useState('');
+  const [newOrderPhone, setNewOrderPhone] = useState('');
+  const [newOrderAddress, setNewOrderAddress] = useState('');
+  const [newOrderProduct, setNewOrderProduct] = useState('');
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [notificationCount, setNotificationCount] = useState(3);
 
   const products: Product[] = [
     { id: 'P001', name: 'Водосточная система металл 125мм', category: 'gutter', price: 1200, unit: 'м.п.', description: 'Металлический водосток диаметром 125мм' },
@@ -58,12 +69,65 @@ const Index = () => {
       setImportLoading(false);
       setIsImportDialogOpen(false);
       setAvitoUrl('');
+      setNotificationCount(prev => prev + 1);
       
       toast({
         title: 'Заявка импортирована!',
         description: `Заказ ${newOrderId} успешно добавлен из Авито`,
       });
     }, 1500);
+  };
+
+  const handleCreateNewOrder = () => {
+    if (!newOrderClient.trim() || !newOrderPhone.trim() || !newOrderAddress.trim() || !newOrderProduct.trim()) {
+      toast({
+        title: 'Ошибка',
+        description: 'Заполните все поля',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const newOrderId = `AVT-${2300 + orders.length + 1}`;
+    const newOrder: Order = {
+      id: newOrderId,
+      client: newOrderClient,
+      phone: newOrderPhone,
+      address: newOrderAddress,
+      status: 'new',
+      amount: 0,
+      date: new Date().toISOString().split('T')[0],
+      product: newOrderProduct,
+    };
+
+    setOrders([newOrder, ...orders]);
+    setIsNewOrderDialogOpen(false);
+    setNewOrderClient('');
+    setNewOrderPhone('');
+    setNewOrderAddress('');
+    setNewOrderProduct('');
+    setNotificationCount(prev => prev + 1);
+
+    toast({
+      title: 'Заказ создан!',
+      description: `Заказ ${newOrderId} успешно добавлен`,
+    });
+  };
+
+  const handleOrderAction = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    const order = orders.find(o => o.id === orderId);
+    toast({
+      title: 'Детали заказа',
+      description: `Открыт заказ ${orderId} для клиента ${order?.client}`,
+    });
+  };
+
+  const handleNotificationClick = () => {
+    toast({
+      title: 'Уведомления',
+      description: `У вас ${notificationCount} новых уведомлений`,
+    });
   };
 
   return (
@@ -83,10 +147,15 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="relative" onClick={handleNotificationClick}>
                 <Icon name="Bell" size={20} />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {notificationCount}
+                  </span>
+                )}
               </Button>
-              <Avatar>
+              <Avatar className="cursor-pointer hover:opacity-80 transition-opacity">
                 <AvatarFallback className="bg-primary text-white font-semibold">ПИ</AvatarFallback>
               </Avatar>
             </div>
@@ -124,6 +193,18 @@ const Index = () => {
               setAvitoUrl={setAvitoUrl}
               importLoading={importLoading}
               handleImportFromAvito={handleImportFromAvito}
+              isNewOrderDialogOpen={isNewOrderDialogOpen}
+              setIsNewOrderDialogOpen={setIsNewOrderDialogOpen}
+              newOrderClient={newOrderClient}
+              setNewOrderClient={setNewOrderClient}
+              newOrderPhone={newOrderPhone}
+              setNewOrderPhone={setNewOrderPhone}
+              newOrderAddress={newOrderAddress}
+              setNewOrderAddress={setNewOrderAddress}
+              newOrderProduct={newOrderProduct}
+              setNewOrderProduct={setNewOrderProduct}
+              handleCreateNewOrder={handleCreateNewOrder}
+              handleOrderAction={handleOrderAction}
             />
           </TabsContent>
 
