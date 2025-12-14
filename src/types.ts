@@ -1,4 +1,4 @@
-export type UserRole = 'client' | 'contractor' | 'supplier' | 'subcontractor';
+export type UserRole = 'client' | 'contractor' | 'supplier' | 'subcontractor' | 'installer';
 
 export type OrderStatus = 
   | 'avito_import' 
@@ -16,6 +16,12 @@ export type OrderStatus =
   | 'completed';
 
 export type ProductCategory = 'gutter' | 'snow_guard';
+
+export type InstallerSource = 'avito' | 'profi' | 'manual';
+
+export type ContractStatus = 'draft' | 'sent' | 'signed' | 'active' | 'completed' | 'terminated';
+
+export type DocumentType = 'passport' | 'inn' | 'snils' | 'license' | 'insurance' | 'other';
 
 export interface User {
   id: string;
@@ -134,4 +140,86 @@ export interface AvitoImport {
   description: string;
   address: string;
   importedAt: string;
+}
+
+export interface InstallerDocument {
+  id: string;
+  installerId: string;
+  type: DocumentType;
+  name: string;
+  url: string;
+  uploadedAt: string;
+  expiresAt?: string;
+  verified: boolean;
+}
+
+export interface Installer {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  city: string;
+  region: string;
+  avatar?: string;
+  rating: number;
+  reviewsCount: number;
+  completedJobs: number;
+  pricePerMeter: number;
+  pricePerUnit: number;
+  specializations: string[];
+  workExperience: number;
+  source: InstallerSource;
+  avitoUrl?: string;
+  profiUrl?: string;
+  documents: InstallerDocument[];
+  isVerified: boolean;
+  isAvailable: boolean;
+  createdAt: string;
+  lastActiveAt: string;
+}
+
+export interface InstallerReview {
+  id: string;
+  installerId: string;
+  orderId: string;
+  clientName: string;
+  rating: number;
+  comment: string;
+  date: string;
+  verified: boolean;
+}
+
+export interface SubcontractContract {
+  id: string;
+  installerId: string;
+  installerName: string;
+  orderId: string;
+  contractNumber: string;
+  status: ContractStatus;
+  amount: number;
+  scope: string;
+  startDate: string;
+  endDate: string;
+  signedAt?: string;
+  documentUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  city: string;
+  address?: string;
+  avatar?: string;
+  source: 'avito' | 'profi' | 'direct' | 'referral';
+  totalOrders: number;
+  completedOrders: number;
+  totalSpent: number;
+  rating?: number;
+  notes?: string;
+  createdAt: string;
+  lastOrderAt?: string;
 }

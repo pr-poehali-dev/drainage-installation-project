@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Catalog from "./pages/Catalog";
@@ -9,6 +10,10 @@ import AvitoImport from "./pages/AvitoImport";
 import Payments from "./pages/Payments";
 import Documents from "./pages/Documents";
 import DeliveryPage from "./pages/Delivery";
+import Installers from "./pages/Installers";
+import InstallerImport from "./pages/InstallerImport";
+import Contracts from "./pages/Contracts";
+import Clients from "./pages/Clients";
 import NotFound from "./pages/NotFound";
 import Icon from "./components/ui/icon";
 
@@ -19,12 +24,21 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const navigation = [
     { name: 'Главная', path: '/', icon: 'layout-dashboard' },
+    { name: 'Монтажники', path: '/installers', icon: 'hard-hat' },
+    { name: 'Клиенты', path: '/clients', icon: 'users' },
+    { name: 'Договоры', path: '/contracts', icon: 'file-signature' },
+    { name: 'Доставка', path: '/delivery', icon: 'truck' }
+  ];
+
+  const moreNavigation = [
     { name: 'Каталог', path: '/catalog', icon: 'package' },
     { name: 'Авито', path: '/avito', icon: 'external-link' },
-    { name: 'Доставка', path: '/delivery', icon: 'truck' },
+    { name: 'Импорт монтажников', path: '/installer-import', icon: 'download' },
     { name: 'Платежи', path: '/payments', icon: 'wallet' },
     { name: 'Документы', path: '/documents', icon: 'file-text' }
   ];
+
+  const [showMore, setShowMore] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,17 +64,48 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                       isActive
                         ? 'bg-blue-50 text-blue-600 font-medium'
                         : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
-                    <Icon name={item.icon as any} size={20} />
-                    <span>{item.name}</span>
+                    <Icon name={item.icon as any} size={18} />
+                    <span className="text-sm">{item.name}</span>
                   </Link>
                 );
               })}
+              
+              <div className="relative">
+                <button
+                  onClick={() => setShowMore(!showMore)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-100"
+                >
+                  <Icon name="more-horizontal" size={18} />
+                  <span className="text-sm">Ещё</span>
+                </button>
+                
+                {showMore && (
+                  <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    {moreNavigation.map((item) => {
+                      const isActive = location.pathname === item.path;
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => setShowMore(false)}
+                          className={`flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors ${
+                            isActive ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
+                          }`}
+                        >
+                          <Icon name={item.icon as any} size={18} />
+                          <span className="text-sm">{item.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -95,6 +140,10 @@ const App = () => (
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/installers" element={<Installers />} />
+            <Route path="/installer-import" element={<InstallerImport />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/contracts" element={<Contracts />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/avito" element={<AvitoImport />} />
             <Route path="/delivery" element={<DeliveryPage />} />
