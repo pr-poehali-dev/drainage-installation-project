@@ -8,6 +8,11 @@ import Icon from '@/components/ui/icon';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
 
 interface Order {
   id: string;
@@ -31,13 +36,55 @@ interface Product {
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-
-  const orders: Order[] = [
+  const [orders, setOrders] = useState<Order[]>([
     { id: 'AVT-2301', client: 'Иванов Петр', phone: '+7 999 123-45-67', address: 'ул. Ленина, 45', status: 'new', amount: 0, date: '2024-12-14', product: 'Водосток + Снегозадержатели' },
     { id: 'AVT-2302', client: 'ООО "СтройМастер"', phone: '+7 999 234-56-78', address: 'пр. Победы, 12', status: 'estimate', amount: 185000, date: '2024-12-13', product: 'Водосточная система' },
     { id: 'AVT-2303', client: 'Сидорова Анна', phone: '+7 999 345-67-89', address: 'ул. Садовая, 8', status: 'paid', amount: 95000, date: '2024-12-12', product: 'Снегозадержатели' },
     { id: 'AVT-2304', client: 'Петров Игорь', phone: '+7 999 456-78-90', address: 'ул. Мира, 23', status: 'delivery', amount: 220000, date: '2024-12-11', product: 'Водосток + Снегозадержатели' },
     { id: 'AVT-2305', client: 'ИП Кузнецов', phone: '+7 999 567-89-01', address: 'ул. Кирова, 67', status: 'installation', amount: 150000, date: '2024-12-10', product: 'Водосточная система' },
+  ]);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [avitoUrl, setAvitoUrl] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+
+  const handleImportFromAvito = () => {
+    if (!avitoUrl.trim()) {
+      toast({
+        title: 'Ошибка',
+        description: 'Введите URL объявления Авито',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setImportLoading(true);
+    
+    setTimeout(() => {
+      const newOrderId = `AVT-${2300 + orders.length + 1}`;
+      const mockOrder: Order = {
+        id: newOrderId,
+        client: 'Смирнов Алексей',
+        phone: '+7 999 678-90-12',
+        address: 'ул. Строителей, 34',
+        status: 'new',
+        amount: 0,
+        date: new Date().toISOString().split('T')[0],
+        product: 'Водосток + Снегозадержатели',
+      };
+      
+      setOrders([mockOrder, ...orders]);
+      setImportLoading(false);
+      setIsImportDialogOpen(false);
+      setAvitoUrl('');
+      
+      toast({
+        title: 'Заявка импортирована!',
+        description: `Заказ ${newOrderId} успешно добавлен из Авито`,
+      });
+    }, 1500);
+  };
+
+  const initialOrders: Order[] = [
   ];
 
   const products: Product[] = [
@@ -238,10 +285,91 @@ const Index = () => {
                     </CardTitle>
                     <CardDescription>Отслеживайте все этапы от заявки до монтажа</CardDescription>
                   </div>
-                  <Button className="gap-2">
-                    <Icon name="Plus" size={16} />
-                    Новый заказ
-                  </Button>
+                  <div className="flex gap-2">
+                    <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                          <Icon name="Download" size={16} />
+                          Импорт из Авито
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
+                            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                              <Icon name="Download" size={20} className="text-blue-600" />
+                            </div>
+                            Импорт заявки из Авито
+                          </DialogTitle>
+                          <DialogDescription>
+                            Автоматически загружаем номер телефона, ФИО и адрес клиента из объявления
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="avito-url">URL объявления Авито</Label>
+                            <Input
+                              id="avito-url"
+                              placeholder="https://www.avito.ru/..."
+                              value={avitoUrl}
+                              onChange={(e) => setAvitoUrl(e.target.value)}
+                            />
+                          </div>
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <p className="text-sm text-blue-900 font-medium mb-2">Что импортируется:</p>
+                            <ul className="text-sm text-blue-700 space-y-1">
+                              <li className="flex items-start gap-2">
+                                <Icon name="Check" size={16} className="mt-0.5 flex-shrink-0" />
+                                <span>Телефон клиента из контактов</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <Icon name="Check" size={16} className="mt-0.5 flex-shrink-0" />
+                                <span>ФИО из профиля</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <Icon name="Check" size={16} className="mt-0.5 flex-shrink-0" />
+                                <span>Адрес объекта из описания</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <Icon name="Check" size={16} className="mt-0.5 flex-shrink-0" />
+                                <span>Описание работ</span>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsImportDialogOpen(false)}
+                            disabled={importLoading}
+                          >
+                            Отмена
+                          </Button>
+                          <Button
+                            onClick={handleImportFromAvito}
+                            disabled={importLoading}
+                            className="gap-2"
+                          >
+                            {importLoading ? (
+                              <>
+                                <Icon name="Loader2" size={16} className="animate-spin" />
+                                Импортируем...
+                              </>
+                            ) : (
+                              <>
+                                <Icon name="Download" size={16} />
+                                Импортировать
+                              </>
+                            )}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    <Button className="gap-2">
+                      <Icon name="Plus" size={16} />
+                      Новый заказ
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
