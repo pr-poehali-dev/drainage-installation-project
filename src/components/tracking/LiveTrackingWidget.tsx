@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
-import { Order, InstallerLocation, getLocationStatus } from '../types';
+import { Order, InstallerLocation, getLocationStatus } from '@/types';
 
 interface LiveTrackingWidgetProps {
   orders: Order[];

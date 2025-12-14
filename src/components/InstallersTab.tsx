@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { toast } from '@/hooks/use-toast';
-import { Installer, InstallerReview } from './types';
+import { Installer, InstallerReview } from '@/types';
 import AvitoImportDialog from './installers/AvitoImportDialog';
 import InstallerCard from './installers/InstallerCard';
 import InstallerDetailsDialog from './installers/InstallerDetailsDialog';

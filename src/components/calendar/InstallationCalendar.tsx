@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Icon from '@/components/ui/icon';
-import { Order } from '../types';
+import { Order } from '@/types';
 
 interface InstallationCalendarProps {
   orders: Order[];

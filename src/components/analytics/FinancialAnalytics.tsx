@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import Icon from '@/components/ui/icon';
-import { FinancialStats } from '../types';
+import { FinancialStats } from '@/types';
 
 interface FinancialAnalyticsProps {
   stats: FinancialStats;

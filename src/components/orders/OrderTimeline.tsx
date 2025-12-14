@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import { Order, getStatusConfig } from '../types';
+import { Order, getStatusConfig } from '@/types';
 
 interface OrderTimelineProps {
   order: Order;

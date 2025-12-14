@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
-import { Product } from './types';
+import { Product } from '@/types';
 
 interface CatalogTabProps {
   products: Product[];

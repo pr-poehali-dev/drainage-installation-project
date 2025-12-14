@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Icon from '@/components/ui/icon';
-import { InventoryItem, Product } from '../types';
+import { InventoryItem, Product } from '@/types';
 
 interface InventoryManagerProps {
   inventory: InventoryItem[];

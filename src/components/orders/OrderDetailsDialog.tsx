@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
-import { Order, InstallerLocation, WorkPhoto, getStatusConfig } from '../types';
+import { Order, InstallerLocation, WorkPhoto, getStatusConfig } from '@/types';
 import OrderTimeline from './OrderTimeline';
 import InstallerTracker from '../tracking/InstallerTracker';
 import WorkPhotoGallery from '../photos/WorkPhotoGallery';
