@@ -73,3 +73,34 @@ export const getNextStatus = (currentStatus: Order['status']): Order['status'] |
   };
   return flow[currentStatus];
 };
+
+export interface Installer {
+  id: string;
+  name: string;
+  city: string;
+  phone: string;
+  email?: string;
+  rating: number;
+  reviewsCount: number;
+  completedJobs: number;
+  experience: number;
+  specialization: ('gutter' | 'snow-guard' | 'both')[];
+  priceGutterInstall: number;
+  priceSnowGuardInstall: number;
+  photo?: string;
+  description: string;
+  avitoUrl?: string;
+  verified: boolean;
+  lastActive: string;
+}
+
+export interface InstallerReview {
+  id: string;
+  installerId: string;
+  clientName: string;
+  rating: number;
+  comment: string;
+  date: string;
+  orderId?: string;
+  photos?: string[];
+}

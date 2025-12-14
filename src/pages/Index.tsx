@@ -5,10 +5,11 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Order, Product, Notification, Estimate, EstimateItem, getStatusConfig } from '@/components/types';
+import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig } from '@/components/types';
 import DashboardTab from '@/components/DashboardTab';
 import OrdersTab from '@/components/OrdersTab';
 import CatalogTab from '@/components/CatalogTab';
+import InstallersTab from '@/components/InstallersTab';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import EstimatePreview from '@/components/EstimatePreview';
 import PriceManagement from '@/components/PriceManagement';
@@ -48,6 +49,24 @@ const Index = () => {
   const [isEstimatePreviewOpen, setIsEstimatePreviewOpen] = useState(false);
   const [currentEstimate, setCurrentEstimate] = useState<Estimate | null>(null);
   const [isPriceManagementOpen, setIsPriceManagementOpen] = useState(false);
+
+  const [installers, setInstallers] = useState<Installer[]>([
+    { id: 'INS-001', name: 'Сергей Викторович М.', city: 'Москва', phone: '+7 495 123-45-67', email: 'sergey.m@example.com', rating: 4.9, reviewsCount: 87, completedJobs: 124, experience: 8, specialization: ['both'], priceGutterInstall: 450, priceSnowGuardInstall: 1200, photo: '', description: 'Профессиональный монтаж водосточных систем и снегозадержателей. Работаю с любыми типами кровли. Даю гарантию на все работы 3 года. Выезд на замер бесплатно.', avitoUrl: 'https://www.avito.ru/moscow/predlozheniya_uslug/montazh_vodostokov', verified: true, lastActive: '5 мин назад' },
+    { id: 'INS-002', name: 'ООО "КровляПрофи"', city: 'Санкт-Петербург', phone: '+7 812 234-56-78', rating: 4.8, reviewsCount: 143, completedJobs: 215, experience: 12, specialization: ['both'], priceGutterInstall: 420, priceSnowGuardInstall: 1150, photo: '', description: 'Компания с опытом более 12 лет. Бригада монтажников 8 человек. Выполняем объекты любой сложности. Работаем с юридическими и физическими лицами.', avitoUrl: 'https://www.avito.ru/sankt-peterburg/predlozheniya_uslug/montazh', verified: true, lastActive: '1 час назад' },
+    { id: 'INS-003', name: 'Алексей Н.', city: 'Новосибирск', phone: '+7 383 345-67-89', rating: 4.7, reviewsCount: 52, completedJobs: 68, experience: 5, specialization: ['gutter'], priceGutterInstall: 380, priceSnowGuardInstall: 0, photo: '', description: 'Специализируюсь на монтаже водосточных систем. Работаю качественно и быстро. Использую только проверенные материалы.', avitoUrl: 'https://www.avito.ru/novosibirsk/predlozheniya_uslug/vodostoki', verified: false, lastActive: '2 часа назад' },
+    { id: 'INS-004', name: 'ИП Кузнецов М.А.', city: 'Екатеринбург', phone: '+7 343 456-78-90', email: 'kuznetsov@example.com', rating: 4.9, reviewsCount: 96, completedJobs: 142, experience: 10, specialization: ['both'], priceGutterInstall: 400, priceSnowGuardInstall: 1100, photo: '', description: 'Индивидуальный предприниматель с большим опытом работы. Все работы выполняю лично. Гарантия качества 5 лет. Работаю по договору.', avitoUrl: 'https://www.avito.ru/ekaterinburg/predlozheniya_uslug/vodostoki_snegozaderzhateli', verified: true, lastActive: '30 мин назад' },
+    { id: 'INS-005', name: 'Дмитрий С.', city: 'Казань', phone: '+7 843 567-89-01', rating: 4.6, reviewsCount: 34, completedJobs: 45, experience: 4, specialization: ['snow-guard'], priceGutterInstall: 0, priceSnowGuardInstall: 950, photo: '', description: 'Монтаж снегозадержателей на любые типы кровли. Быстро, качественно, с гарантией.', verified: false, lastActive: '1 день назад' },
+    { id: 'INS-006', name: 'СтройМонтаж НН', city: 'Нижний Новгород', phone: '+7 831 678-90-12', rating: 4.8, reviewsCount: 78, completedJobs: 112, experience: 9, specialization: ['both'], priceGutterInstall: 410, priceSnowGuardInstall: 1080, photo: '', description: 'Профессиональная бригада монтажников. Выполняем работы под ключ. Собственный инструмент и оборудование.', verified: true, lastActive: '10 мин назад' },
+  ]);
+
+  const [reviews, setReviews] = useState<InstallerReview[]>([
+    { id: 'REV-001', installerId: 'INS-001', clientName: 'Иван Петрович', rating: 5, comment: 'Отличная работа! Сергей выполнил монтаж водостока быстро и качественно. Все аккуратно, чисто. Рекомендую!', date: '10.12.2024', photos: ['photo1.jpg', 'photo2.jpg'] },
+    { id: 'REV-002', installerId: 'INS-001', clientName: 'Мария Сергеевна', rating: 5, comment: 'Профессионал своего дела. Установил снегозадержатели, дал рекомендации по уходу. Очень доволен работой!', date: '05.12.2024' },
+    { id: 'REV-003', installerId: 'INS-001', clientName: 'ООО "СтройКомплект"', rating: 4, comment: 'Хорошая работа, выполнено в срок. Небольшие замечания по оформлению документов, но все исправили быстро.', date: '28.11.2024' },
+    { id: 'REV-004', installerId: 'INS-002', clientName: 'Андрей В.', rating: 5, comment: 'Компания работает профессионально. Бригада приехала вовремя, все сделали за один день. Качество отличное!', date: '12.12.2024', photos: ['photo3.jpg'] },
+    { id: 'REV-005', installerId: 'INS-002', clientName: 'Елена Ивановна', rating: 5, comment: 'Очень довольны результатом! Установили водосточную систему на большом доме. Работали быстро и аккуратно.', date: '01.12.2024' },
+    { id: 'REV-006', installerId: 'INS-004', clientName: 'Олег П.', rating: 5, comment: 'Михаил Александрович - настоящий профессионал! Все объяснил, показал, сделал качественно. Рекомендую!', date: '08.12.2024' },
+  ]);
 
   const handleImportFromAvito = () => {
     if (!avitoUrl.trim()) {
@@ -253,6 +272,25 @@ const Index = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const handleImportInstallersFromAvito = (city: string, specialization: string) => {
+    const mockInstallers: Installer[] = [
+      { id: `INS-${installers.length + 1}`, name: 'Владимир Петрович К.', city, phone: '+7 999 111-22-33', rating: 4.5, reviewsCount: 23, completedJobs: 34, experience: 6, specialization: [specialization === 'both' ? 'both' : specialization as any], priceGutterInstall: 390, priceSnowGuardInstall: 1050, photo: '', description: `Качественный монтаж в городе ${city}. Работаю быстро и аккуратно.`, avitoUrl: `https://www.avito.ru/${city.toLowerCase()}/predlozheniya_uslug/montazh`, verified: false, lastActive: 'Только что' },
+      { id: `INS-${installers.length + 2}`, name: 'ООО "МонтажСервис"', city, phone: '+7 999 222-33-44', rating: 4.7, reviewsCount: 45, completedJobs: 67, experience: 7, specialization: [specialization === 'both' ? 'both' : specialization as any], priceGutterInstall: 420, priceSnowGuardInstall: 1120, photo: '', description: `Профессиональная бригада в ${city}. Выполняем объекты любой сложности.`, avitoUrl: `https://www.avito.ru/${city.toLowerCase()}/predlozheniya_uslug/vodostoki`, verified: true, lastActive: '15 мин назад' },
+    ];
+    setInstallers([...mockInstallers, ...installers]);
+
+    const newNotification: Notification = {
+      id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+      type: 'system',
+      title: 'Монтажники загружены из Авито',
+      message: `Добавлено ${mockInstallers.length} новых монтажников из города ${city}`,
+      from: 'Система Авито',
+      timestamp: 'Только что',
+      read: false,
+    };
+    setNotifications([newNotification, ...notifications]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
@@ -331,7 +369,7 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[500px]">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[700px]">
             <TabsTrigger value="dashboard" className="gap-2">
               <Icon name="LayoutDashboard" size={16} />
               Дашборд
@@ -343,6 +381,10 @@ const Index = () => {
             <TabsTrigger value="catalog" className="gap-2">
               <Icon name="ShoppingCart" size={16} />
               Каталог
+            </TabsTrigger>
+            <TabsTrigger value="installers" className="gap-2">
+              <Icon name="Users" size={16} />
+              Монтажники
             </TabsTrigger>
           </TabsList>
 
@@ -377,6 +419,14 @@ const Index = () => {
 
           <TabsContent value="catalog">
             <CatalogTab products={products} />
+          </TabsContent>
+
+          <TabsContent value="installers">
+            <InstallersTab 
+              installers={installers} 
+              reviews={reviews}
+              onImportFromAvito={handleImportInstallersFromAvito}
+            />
           </TabsContent>
         </Tabs>
       </div>
