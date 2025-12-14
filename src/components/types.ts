@@ -98,25 +98,6 @@ export interface FinancialStats {
   ordersCount: number;
 }
 
-export const getStageLabel = (stage: WorkPhoto['stage']) => {
-  const labels = {
-    before: 'До монтажа',
-    during: 'В процессе',
-    after: 'После монтажа',
-  };
-  return labels[stage];
-};
-
-export const getLocationStatus = (status: InstallerLocation['status']) => {
-  const statuses = {
-    on_way: { label: 'В пути', color: 'bg-blue-500', icon: 'Navigation' },
-    arrived: { label: 'На объекте', color: 'bg-green-500', icon: 'MapPin' },
-    working: { label: 'Работает', color: 'bg-orange-500', icon: 'Wrench' },
-    departed: { label: 'Уехал', color: 'bg-gray-500', icon: 'CheckCircle' },
-  };
-  return statuses[status];
-};
-
 export interface EstimateItem {
   name: string;
   quantity: number;
@@ -135,30 +116,6 @@ export interface Estimate {
   total: number;
   notes: string;
 }
-
-export const getStatusConfig = (status: Order['status']) => {
-  const configs = {
-    new: { label: 'Новая заявка', color: 'bg-blue-500', icon: 'FileText' },
-    estimate: { label: 'Смета готова', color: 'bg-purple-500', icon: 'Calculator' },
-    paid: { label: 'Оплачено', color: 'bg-green-500', icon: 'CreditCard' },
-    delivery: { label: 'Доставка', color: 'bg-orange-500', icon: 'Truck' },
-    installation: { label: 'Монтаж', color: 'bg-yellow-500', icon: 'Wrench' },
-    completed: { label: 'Завершено', color: 'bg-gray-500', icon: 'CheckCircle' },
-  };
-  return configs[status];
-};
-
-export const getNextStatus = (currentStatus: Order['status']): Order['status'] | null => {
-  const flow: Record<Order['status'], Order['status'] | null> = {
-    new: 'estimate',
-    estimate: 'paid',
-    paid: 'delivery',
-    delivery: 'installation',
-    installation: 'completed',
-    completed: null,
-  };
-  return flow[currentStatus];
-};
 
 export interface Installer {
   id: string;
@@ -245,3 +202,46 @@ export interface WorkPhoto {
     lng: number;
   };
 }
+
+export const getStageLabel = (stage: WorkPhoto['stage']) => {
+  const labels = {
+    before: 'До монтажа',
+    during: 'В процессе',
+    after: 'После монтажа',
+  };
+  return labels[stage];
+};
+
+export const getLocationStatus = (status: InstallerLocation['status']) => {
+  const statuses = {
+    on_way: { label: 'В пути', color: 'bg-blue-500', icon: 'Navigation' },
+    arrived: { label: 'На объекте', color: 'bg-green-500', icon: 'MapPin' },
+    working: { label: 'Работает', color: 'bg-orange-500', icon: 'Wrench' },
+    departed: { label: 'Уехал', color: 'bg-gray-500', icon: 'CheckCircle' },
+  };
+  return statuses[status];
+};
+
+export const getStatusConfig = (status: Order['status']) => {
+  const configs = {
+    new: { label: 'Новая заявка', color: 'bg-blue-500', icon: 'FileText' },
+    estimate: { label: 'Смета готова', color: 'bg-purple-500', icon: 'Calculator' },
+    paid: { label: 'Оплачено', color: 'bg-green-500', icon: 'CreditCard' },
+    delivery: { label: 'Доставка', color: 'bg-orange-500', icon: 'Truck' },
+    installation: { label: 'Монтаж', color: 'bg-yellow-500', icon: 'Wrench' },
+    completed: { label: 'Завершено', color: 'bg-gray-500', icon: 'CheckCircle' },
+  };
+  return configs[status];
+};
+
+export const getNextStatus = (currentStatus: Order['status']): Order['status'] | null => {
+  const flow: Record<Order['status'], Order['status'] | null> = {
+    new: 'estimate',
+    estimate: 'paid',
+    paid: 'delivery',
+    delivery: 'installation',
+    installation: 'completed',
+    completed: null,
+  };
+  return flow[currentStatus];
+};
