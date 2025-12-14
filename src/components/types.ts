@@ -16,6 +16,7 @@ export interface Order {
   longitude?: number;
   installerLocation?: InstallerLocation;
   workPhotos?: WorkPhoto[];
+  clientData?: ClientData;
 }
 
 export interface Product {
