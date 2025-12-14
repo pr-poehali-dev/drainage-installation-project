@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Order, getStatusConfig } from './types';
+import { Order, getStatusConfig, getNextStatus } from './types';
 
 interface OrdersTabProps {
   orders: Order[];
@@ -28,6 +28,7 @@ interface OrdersTabProps {
   setNewOrderProduct: (value: string) => void;
   handleCreateNewOrder: () => void;
   handleOrderAction: (orderId: string) => void;
+  handleChangeOrderStatus: (orderId: string, newStatus: Order['status']) => void;
 }
 
 const OrdersTab = ({
@@ -50,6 +51,7 @@ const OrdersTab = ({
   setNewOrderProduct,
   handleCreateNewOrder,
   handleOrderAction,
+  handleChangeOrderStatus,
 }: OrdersTabProps) => {
   return (
     <div className="animate-fade-in">
@@ -265,14 +267,25 @@ const OrdersTab = ({
                             {order.amount > 0 ? `${order.amount.toLocaleString()} ₽` : 'Расчет...'}
                           </p>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="mt-2"
-                          onClick={() => handleOrderAction(order.id)}
-                        >
-                          Подробнее
-                        </Button>
+                        <div className="flex gap-2 mt-2">
+                          {getNextStatus(order.status) && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleChangeOrderStatus(order.id, getNextStatus(order.status)!)}
+                              className="flex-1"
+                            >
+                              <Icon name="ArrowRight" size={14} className="mr-1" />
+                              {getStatusConfig(getNextStatus(order.status)!).label}
+                            </Button>
+                          )}
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleOrderAction(order.id)}
+                          >
+                            <Icon name="Eye" size={14} />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

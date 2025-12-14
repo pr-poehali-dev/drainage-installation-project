@@ -14,8 +14,40 @@ export interface Product {
   name: string;
   category: 'gutter' | 'snow-guard';
   price: number;
+  wholesalePrice?: number;
   unit: string;
   description: string;
+  manufacturer?: string;
+}
+
+export interface Notification {
+  id: string;
+  type: 'order' | 'payment' | 'delivery' | 'system';
+  title: string;
+  message: string;
+  from: string;
+  timestamp: string;
+  read: boolean;
+  orderId?: string;
+}
+
+export interface EstimateItem {
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+  total: number;
+}
+
+export interface Estimate {
+  orderId: string;
+  client: string;
+  items: EstimateItem[];
+  materials: number;
+  installation: number;
+  delivery: number;
+  total: number;
+  notes: string;
 }
 
 export const getStatusConfig = (status: Order['status']) => {
@@ -28,4 +60,16 @@ export const getStatusConfig = (status: Order['status']) => {
     completed: { label: 'Завершено', color: 'bg-gray-500', icon: 'CheckCircle' },
   };
   return configs[status];
+};
+
+export const getNextStatus = (currentStatus: Order['status']): Order['status'] | null => {
+  const flow: Record<Order['status'], Order['status'] | null> = {
+    new: 'estimate',
+    estimate: 'paid',
+    paid: 'delivery',
+    delivery: 'installation',
+    installation: 'completed',
+    completed: null,
+  };
+  return flow[currentStatus];
 };

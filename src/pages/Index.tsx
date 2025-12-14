@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-import { Order, Product } from '@/components/types';
+import { Order, Product, Notification, Estimate, EstimateItem, getStatusConfig } from '@/components/types';
 import DashboardTab from '@/components/DashboardTab';
 import OrdersTab from '@/components/OrdersTab';
 import CatalogTab from '@/components/CatalogTab';
+import NotificationsPanel from '@/components/NotificationsPanel';
+import EstimatePreview from '@/components/EstimatePreview';
+import PriceManagement from '@/components/PriceManagement';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -22,6 +22,20 @@ const Index = () => {
     { id: 'AVT-2304', client: 'Петров Игорь', phone: '+7 999 456-78-90', address: 'ул. Мира, 23', status: 'delivery', amount: 220000, date: '2024-12-11', product: 'Водосток + Снегозадержатели' },
     { id: 'AVT-2305', client: 'ИП Кузнецов', phone: '+7 999 567-89-01', address: 'ул. Кирова, 67', status: 'installation', amount: 150000, date: '2024-12-10', product: 'Водосточная система' },
   ]);
+  
+  const [products, setProducts] = useState<Product[]>([
+    { id: 'P001', name: 'Водосточная система металл 125мм', category: 'gutter', price: 1200, wholesalePrice: 950, unit: 'м.п.', description: 'Металлический водосток диаметром 125мм', manufacturer: 'Металл Профиль' },
+    { id: 'P002', name: 'Водосточная система пластик 125мм', category: 'gutter', price: 850, wholesalePrice: 680, unit: 'м.п.', description: 'Пластиковый водосток диаметром 125мм', manufacturer: 'Docke' },
+    { id: 'P003', name: 'Снегозадержатель трубчатый 3м', category: 'snow-guard', price: 2500, wholesalePrice: 2100, unit: 'шт', description: 'Трубчатый снегозадержатель длиной 3 метра', manufacturer: 'Grand Line' },
+    { id: 'P004', name: 'Снегозадержатель уголковый 2м', category: 'snow-guard', price: 1800, wholesalePrice: 1500, unit: 'шт', description: 'Уголковый снегозадержатель длиной 2 метра', manufacturer: 'Аквасистем' },
+  ]);
+
+  const [notifications, setNotifications] = useState<Notification[]>([
+    { id: 'N001', type: 'order', title: 'Новая заявка из Авито', message: 'Клиент Иванов Петр оставил заявку на расчет водостока', from: 'Система Авито', timestamp: '10 мин назад', read: false, orderId: 'AVT-2301' },
+    { id: 'N002', type: 'payment', title: 'Оплата получена', message: 'Клиент Сидорова Анна оплатила заказ на сумму 95 000 ₽', from: 'Платежная система', timestamp: '1 час назад', read: false },
+    { id: 'N003', type: 'delivery', title: 'Материалы отгружены', message: 'Заказ AVT-2304 отправлен на объект', from: 'Поставщик МеталлПроф', timestamp: '3 часа назад', read: false },
+  ]);
+
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [avitoUrl, setAvitoUrl] = useState('');
   const [importLoading, setImportLoading] = useState(false);
@@ -30,15 +44,10 @@ const Index = () => {
   const [newOrderPhone, setNewOrderPhone] = useState('');
   const [newOrderAddress, setNewOrderAddress] = useState('');
   const [newOrderProduct, setNewOrderProduct] = useState('');
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [notificationCount, setNotificationCount] = useState(3);
-
-  const products: Product[] = [
-    { id: 'P001', name: 'Водосточная система металл 125мм', category: 'gutter', price: 1200, unit: 'м.п.', description: 'Металлический водосток диаметром 125мм' },
-    { id: 'P002', name: 'Водосточная система пластик 125мм', category: 'gutter', price: 850, unit: 'м.п.', description: 'Пластиковый водосток диаметром 125мм' },
-    { id: 'P003', name: 'Снегозадержатель трубчатый 3м', category: 'snow-guard', price: 2500, unit: 'шт', description: 'Трубчатый снегозадержатель длиной 3 метра' },
-    { id: 'P004', name: 'Снегозадержатель уголковый 2м', category: 'snow-guard', price: 1800, unit: 'шт', description: 'Уголковый снегозадержатель длиной 2 метра' },
-  ];
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isEstimatePreviewOpen, setIsEstimatePreviewOpen] = useState(false);
+  const [currentEstimate, setCurrentEstimate] = useState<Estimate | null>(null);
+  const [isPriceManagementOpen, setIsPriceManagementOpen] = useState(false);
 
   const handleImportFromAvito = () => {
     if (!avitoUrl.trim()) {
@@ -65,11 +74,22 @@ const Index = () => {
         product: 'Водосток + Снегозадержатели',
       };
       
+      const newNotification: Notification = {
+        id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+        type: 'order',
+        title: 'Новая заявка импортирована',
+        message: `Заказ ${newOrderId} от ${mockOrder.client} добавлен из Авито`,
+        from: 'Система Авито',
+        timestamp: 'Только что',
+        read: false,
+        orderId: newOrderId,
+      };
+      
       setOrders([mockOrder, ...orders]);
+      setNotifications([newNotification, ...notifications]);
       setImportLoading(false);
       setIsImportDialogOpen(false);
       setAvitoUrl('');
-      setNotificationCount(prev => prev + 1);
       
       toast({
         title: 'Заявка импортирована!',
@@ -100,13 +120,24 @@ const Index = () => {
       product: newOrderProduct,
     };
 
+    const newNotification: Notification = {
+      id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+      type: 'order',
+      title: 'Новый заказ создан',
+      message: `Заказ ${newOrderId} от ${newOrderClient} добавлен вручную`,
+      from: 'Вы',
+      timestamp: 'Только что',
+      read: true,
+      orderId: newOrderId,
+    };
+
     setOrders([newOrder, ...orders]);
+    setNotifications([newNotification, ...notifications]);
     setIsNewOrderDialogOpen(false);
     setNewOrderClient('');
     setNewOrderPhone('');
     setNewOrderAddress('');
     setNewOrderProduct('');
-    setNotificationCount(prev => prev + 1);
 
     toast({
       title: 'Заказ создан!',
@@ -115,20 +146,112 @@ const Index = () => {
   };
 
   const handleOrderAction = (orderId: string) => {
-    setSelectedOrderId(orderId);
     const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const estimate: Estimate = {
+      orderId: order.id,
+      client: order.client,
+      items: [
+        { name: 'Водосточная система металл 125мм', quantity: 35, unit: 'м.п.', price: 1200, total: 42000 },
+        { name: 'Снегозадержатель трубчатый 3м', quantity: 8, unit: 'шт', price: 2500, total: 20000 },
+      ],
+      materials: 62000,
+      installation: 18000,
+      delivery: 8000,
+      total: 88000,
+      notes: 'Монтаж в течение 3 рабочих дней после доставки материалов',
+    };
+
+    setCurrentEstimate(estimate);
+    setIsEstimatePreviewOpen(true);
+  };
+
+  const handleSaveEstimate = (estimate: Estimate) => {
+    setCurrentEstimate(estimate);
     toast({
-      title: 'Детали заказа',
-      description: `Открыт заказ ${orderId} для клиента ${order?.client}`,
+      title: 'Смета сохранена',
+      description: 'Изменения успешно сохранены',
+    });
+  };
+
+  const handleSendEstimate = () => {
+    if (!currentEstimate) return;
+
+    const updatedOrders = orders.map(o =>
+      o.id === currentEstimate.orderId
+        ? { ...o, status: 'estimate' as const, amount: currentEstimate.total }
+        : o
+    );
+
+    const newNotification: Notification = {
+      id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+      type: 'order',
+      title: 'Смета отправлена клиенту',
+      message: `Смета на сумму ${currentEstimate.total.toLocaleString()} ₽ отправлена клиенту ${currentEstimate.client}`,
+      from: 'Вы',
+      timestamp: 'Только что',
+      read: true,
+      orderId: currentEstimate.orderId,
+    };
+
+    setOrders(updatedOrders);
+    setNotifications([newNotification, ...notifications]);
+
+    toast({
+      title: 'Смета отправлена!',
+      description: `Клиент ${currentEstimate.client} получил смету на ${currentEstimate.total.toLocaleString()} ₽`,
+    });
+  };
+
+  const handleChangeOrderStatus = (orderId: string, newStatus: Order['status']) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const updatedOrders = orders.map(o =>
+      o.id === orderId ? { ...o, status: newStatus } : o
+    );
+
+    const statusConfig = getStatusConfig(newStatus);
+    const newNotification: Notification = {
+      id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+      type: 'order',
+      title: `Статус изменен: ${statusConfig.label}`,
+      message: `Заказ ${orderId} перешел в статус "${statusConfig.label}"`,
+      from: 'Вы',
+      timestamp: 'Только что',
+      read: true,
+      orderId,
+    };
+
+    setOrders(updatedOrders);
+    setNotifications([newNotification, ...notifications]);
+
+    toast({
+      title: 'Статус обновлен!',
+      description: `Заказ ${orderId}: ${statusConfig.label}`,
     });
   };
 
   const handleNotificationClick = () => {
-    toast({
-      title: 'Уведомления',
-      description: `У вас ${notificationCount} новых уведомлений`,
-    });
+    setIsNotificationsOpen(true);
   };
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  };
+
+  const handleNotificationItemClick = (notification: Notification) => {
+    if (notification.orderId) {
+      setActiveTab('orders');
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
@@ -147,11 +270,15 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={() => setIsPriceManagementOpen(true)}>
+                <Icon name="DollarSign" size={18} className="mr-2" />
+                Прайсы
+              </Button>
               <Button variant="ghost" size="icon" className="relative" onClick={handleNotificationClick}>
                 <Icon name="Bell" size={20} />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                    {notificationCount}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-pulse">
+                    {unreadCount}
                   </span>
                 )}
               </Button>
@@ -162,6 +289,45 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      <Sheet open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader className="mb-4">
+            <SheetTitle>Уведомления</SheetTitle>
+            <SheetDescription>
+              {unreadCount > 0 ? `${unreadCount} непрочитанных` : 'Все прочитано'}
+            </SheetDescription>
+          </SheetHeader>
+          <NotificationsPanel
+            notifications={notifications}
+            onMarkAsRead={handleMarkAsRead}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onNotificationClick={handleNotificationItemClick}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={isPriceManagementOpen} onOpenChange={setIsPriceManagementOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
+          <SheetHeader className="mb-4">
+            <SheetTitle>Управление прайсами</SheetTitle>
+            <SheetDescription>
+              Редактирование цен и добавление новых товаров
+            </SheetDescription>
+          </SheetHeader>
+          <PriceManagement products={products} onUpdateProducts={setProducts} />
+        </SheetContent>
+      </Sheet>
+
+      {currentEstimate && (
+        <EstimatePreview
+          open={isEstimatePreviewOpen}
+          onOpenChange={setIsEstimatePreviewOpen}
+          estimate={currentEstimate}
+          onSave={handleSaveEstimate}
+          onSend={handleSendEstimate}
+        />
+      )}
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -205,6 +371,7 @@ const Index = () => {
               setNewOrderProduct={setNewOrderProduct}
               handleCreateNewOrder={handleCreateNewOrder}
               handleOrderAction={handleOrderAction}
+              handleChangeOrderStatus={handleChangeOrderStatus}
             />
           </TabsContent>
 
