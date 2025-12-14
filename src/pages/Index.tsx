@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig, ChatMessage, Document, FinancialStats } from '@/components/types';
+import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig, ChatMessage, Document, FinancialStats, InstallerLocation, WorkPhoto } from '@/components/types';
 import DashboardTab from '@/components/DashboardTab';
 import OrdersTab from '@/components/OrdersTab';
 import CatalogTab from '@/components/CatalogTab';
@@ -17,16 +17,16 @@ import ChatPanel from '@/components/chat/ChatPanel';
 import DocumentsPanel from '@/components/documents/DocumentsPanel';
 import AssignInstallerDialog from '@/components/orders/AssignInstallerDialog';
 import InstallationCalendar from '@/components/calendar/InstallationCalendar';
-import OrderTimeline from '@/components/orders/OrderTimeline';
+import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orders, setOrders] = useState<Order[]>([
-    { id: 'AVT-2301', client: 'Иванов Петр', phone: '+7 999 123-45-67', address: 'ул. Ленина, 45', status: 'new', amount: 0, date: '2024-12-14', product: 'Водосток + Снегозадержатели' },
-    { id: 'AVT-2302', client: 'ООО "СтройМастер"', phone: '+7 999 234-56-78', address: 'пр. Победы, 12', status: 'estimate', amount: 185000, date: '2024-12-13', product: 'Водосточная система', installerId: 'INS-002', installerName: 'ООО "КровляПрофи"', installationDate: '2024-12-18' },
-    { id: 'AVT-2303', client: 'Сидорова Анна', phone: '+7 999 345-67-89', address: 'ул. Садовая, 8', status: 'paid', amount: 95000, date: '2024-12-12', product: 'Снегозадержатели', installerId: 'INS-005', installerName: 'Дмитрий С.', installationDate: '2024-12-15' },
-    { id: 'AVT-2304', client: 'Петров Игорь', phone: '+7 999 456-78-90', address: 'ул. Мира, 23', status: 'delivery', amount: 220000, date: '2024-12-11', product: 'Водосток + Снегозадержатели', installerId: 'INS-001', installerName: 'Сергей Викторович М.', installationDate: '2024-12-16' },
-    { id: 'AVT-2305', client: 'ИП Кузнецов', phone: '+7 999 567-89-01', address: 'ул. Кирова, 67', status: 'installation', amount: 150000, date: '2024-12-10', product: 'Водосточная система', installerId: 'INS-004', installerName: 'ИП Кузнецов М.А.', installationDate: '2024-12-14' },
+    { id: 'AVT-2301', client: 'Иванов Петр', phone: '+7 999 123-45-67', address: 'ул. Ленина, 45', status: 'new', amount: 0, date: '2024-12-14', product: 'Водосток + Снегозадержатели', latitude: 55.7558, longitude: 37.6173 },
+    { id: 'AVT-2302', client: 'ООО "СтройМастер"', phone: '+7 999 234-56-78', address: 'пр. Победы, 12', status: 'estimate', amount: 185000, date: '2024-12-13', product: 'Водосточная система', installerId: 'INS-002', installerName: 'ООО "КровляПрофи"', installationDate: '2024-12-18', latitude: 59.9343, longitude: 30.3351 },
+    { id: 'AVT-2303', client: 'Сидорова Анна', phone: '+7 999 345-67-89', address: 'ул. Садовая, 8', status: 'paid', amount: 95000, date: '2024-12-12', product: 'Снегозадержатели', installerId: 'INS-005', installerName: 'Дмитрий С.', installationDate: '2024-12-15', latitude: 55.7887, longitude: 49.1221 },
+    { id: 'AVT-2304', client: 'Петров Игорь', phone: '+7 999 456-78-90', address: 'ул. Мира, 23', status: 'delivery', amount: 220000, date: '2024-12-11', product: 'Водосток + Снегозадержатели', installerId: 'INS-001', installerName: 'Сергей Викторович М.', installationDate: '2024-12-16', latitude: 55.7522, longitude: 37.6156 },
+    { id: 'AVT-2305', client: 'ИП Кузнецов', phone: '+7 999 567-89-01', address: 'ул. Кирова, 67', status: 'installation', amount: 150000, date: '2024-12-10', product: 'Водосточная система', installerId: 'INS-004', installerName: 'ИП Кузнецов М.А.', installationDate: '2024-12-14', latitude: 56.8389, longitude: 60.6057 },
   ]);
   
   const [products, setProducts] = useState<Product[]>([
@@ -37,9 +37,11 @@ const Index = () => {
   ]);
 
   const [notifications, setNotifications] = useState<Notification[]>([
-    { id: 'N001', type: 'order', title: 'Новая заявка из Авито', message: 'Клиент Иванов Петр оставил заявку на расчет водостока', from: 'Система Авито', timestamp: '10 мин назад', read: false, orderId: 'AVT-2301' },
-    { id: 'N002', type: 'payment', title: 'Оплата получена', message: 'Клиент Сидорова Анна оплатила заказ на сумму 95 000 ₽', from: 'Платежная система', timestamp: '1 час назад', read: false },
-    { id: 'N003', type: 'delivery', title: 'Материалы отгружены', message: 'Заказ AVT-2304 отправлен на объект', from: 'Поставщик МеталлПроф', timestamp: '3 часа назад', read: false },
+    { id: 'N001', type: 'location', title: 'Монтажник на объекте', message: 'ИП Кузнецов М.А. прибыл на объект по адресу ул. Кирова, 67', from: 'Система трекинга', timestamp: '5 мин назад', read: false, orderId: 'AVT-2305' },
+    { id: 'N002', type: 'photo', title: 'Новые фотографии', message: 'ИП Кузнецов М.А. загрузил 2 фото в процессе монтажа', from: 'ИП Кузнецов М.А.', timestamp: '15 мин назад', read: false, orderId: 'AVT-2305' },
+    { id: 'N003', type: 'order', title: 'Новая заявка из Авито', message: 'Клиент Иванов Петр оставил заявку на расчет водостока', from: 'Система Авито', timestamp: '1 час назад', read: false, orderId: 'AVT-2301' },
+    { id: 'N004', type: 'location', title: 'Монтажник выехал', message: 'Сергей Викторович М. направляется на объект (осталось ~2.5 км)', from: 'Система трекинга', timestamp: '2 часа назад', read: true, orderId: 'AVT-2304' },
+    { id: 'N005', type: 'payment', title: 'Оплата получена', message: 'Клиент Сидорова Анна оплатила заказ на сумму 95 000 ₽', from: 'Платежная система', timestamp: '3 часа назад', read: true },
   ]);
 
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -72,6 +74,25 @@ const Index = () => {
   const [isDocsOpen, setIsDocsOpen] = useState(false);
   const [isAssignInstallerOpen, setIsAssignInstallerOpen] = useState(false);
   const [selectedOrderForInstaller, setSelectedOrderForInstaller] = useState<string | null>(null);
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
+  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<string | null>(null);
+
+  const [installerLocations, setInstallerLocations] = useState<InstallerLocation[]>([
+    { orderId: 'AVT-2305', installerId: 'INS-004', status: 'working', arrivalTime: '09:15', currentLat: 56.8389, currentLng: 60.6057, lastUpdate: '14:32' },
+    { orderId: 'AVT-2304', installerId: 'INS-001', status: 'on_way', currentLat: 55.7450, currentLng: 37.6100, distance: 2.5, lastUpdate: '14:45' },
+    { orderId: 'AVT-2303', installerId: 'INS-005', status: 'departed', arrivalTime: '10:00', departureTime: '15:30', lastUpdate: '15:30' },
+  ]);
+
+  const [workPhotos, setWorkPhotos] = useState<WorkPhoto[]>([
+    { id: 'PHT-001', orderId: 'AVT-2305', installerId: 'INS-004', stage: 'before', photoUrl: '/photos/before-1.jpg', caption: 'Состояние крыши до начала работ', timestamp: '09:20', location: { lat: 56.8389, lng: 60.6057 } },
+    { id: 'PHT-002', orderId: 'AVT-2305', installerId: 'INS-004', stage: 'before', photoUrl: '/photos/before-2.jpg', caption: 'Общий вид объекта', timestamp: '09:22', location: { lat: 56.8389, lng: 60.6057 } },
+    { id: 'PHT-003', orderId: 'AVT-2305', installerId: 'INS-004', stage: 'during', photoUrl: '/photos/during-1.jpg', caption: 'Монтаж водосточной системы', timestamp: '11:45', location: { lat: 56.8389, lng: 60.6057 } },
+    { id: 'PHT-004', orderId: 'AVT-2305', installerId: 'INS-004', stage: 'during', photoUrl: '/photos/during-2.jpg', caption: 'Установка крепежей', timestamp: '12:30', location: { lat: 56.8389, lng: 60.6057 } },
+    { id: 'PHT-005', orderId: 'AVT-2303', installerId: 'INS-005', stage: 'before', photoUrl: '/photos/before-3.jpg', caption: 'Крыша перед установкой снегозадержателей', timestamp: '10:05' },
+    { id: 'PHT-006', orderId: 'AVT-2303', installerId: 'INS-005', stage: 'during', photoUrl: '/photos/during-3.jpg', caption: 'Процесс установки', timestamp: '12:15' },
+    { id: 'PHT-007', orderId: 'AVT-2303', installerId: 'INS-005', stage: 'after', photoUrl: '/photos/after-1.jpg', caption: 'Готовый результат', timestamp: '15:20' },
+    { id: 'PHT-008', orderId: 'AVT-2303', installerId: 'INS-005', stage: 'after', photoUrl: '/photos/after-2.jpg', caption: 'Вид с другой стороны', timestamp: '15:25' },
+  ]);
 
   const [installers, setInstallers] = useState<Installer[]>([
     { id: 'INS-001', name: 'Сергей Викторович М.', city: 'Москва', phone: '+7 495 123-45-67', email: 'sergey.m@example.com', rating: 4.9, reviewsCount: 87, completedJobs: 124, experience: 8, specialization: ['both'], priceGutterInstall: 450, priceSnowGuardInstall: 1200, photo: '', description: 'Профессиональный монтаж водосточных систем и снегозадержателей. Работаю с любыми типами кровли. Даю гарантию на все работы 3 года. Выезд на замер бесплатно.', avitoUrl: 'https://www.avito.ru/moscow/predlozheniya_uslug/montazh_vodostokov', verified: true, lastActive: '5 мин назад' },
@@ -188,25 +209,73 @@ const Index = () => {
   };
 
   const handleOrderAction = (orderId: string) => {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
+    setSelectedOrderForDetails(orderId);
+    setIsOrderDetailsOpen(true);
+  };
 
-    const estimate: Estimate = {
-      orderId: order.id,
-      client: order.client,
-      items: [
-        { name: 'Водосточная система металл 125мм', quantity: 35, unit: 'м.п.', price: 1200, total: 42000 },
-        { name: 'Снегозадержатель трубчатый 3м', quantity: 8, unit: 'шт', price: 2500, total: 20000 },
-      ],
-      materials: 62000,
-      installation: 18000,
-      delivery: 8000,
-      total: 88000,
-      notes: 'Монтаж в течение 3 рабочих дней после доставки материалов',
+  const handleRefreshLocation = () => {
+    if (!selectedOrderForDetails) return;
+    
+    toast({
+      title: 'Обновление геолокации',
+      description: 'Данные о местоположении обновлены',
+    });
+  };
+
+  const handleRequestPhoto = (stage: WorkPhoto['stage']) => {
+    if (!selectedOrderForDetails) return;
+
+    const order = orders.find(o => o.id === selectedOrderForDetails);
+    if (!order || !order.installerName) return;
+
+    const newNotification: Notification = {
+      id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+      type: 'photo',
+      title: 'Запрос фотографии',
+      message: `Монтажнику ${order.installerName} отправлен запрос на фото (${stage === 'before' ? 'до монтажа' : stage === 'during' ? 'в процессе' : 'после монтажа'})`,
+      from: 'Вы',
+      timestamp: 'Только что',
+      read: true,
+      orderId: selectedOrderForDetails,
     };
+    setNotifications([newNotification, ...notifications]);
 
-    setCurrentEstimate(estimate);
-    setIsEstimatePreviewOpen(true);
+    setTimeout(() => {
+      const newPhoto: WorkPhoto = {
+        id: `PHT-${workPhotos.length + 1}`,
+        orderId: selectedOrderForDetails,
+        installerId: order.installerId || '',
+        stage,
+        photoUrl: `/photos/${stage}-new.jpg`,
+        caption: `Фотография ${stage === 'before' ? 'до начала работ' : stage === 'during' ? 'в процессе монтажа' : 'после завершения'}`,
+        timestamp: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }),
+        location: order.latitude && order.longitude ? { lat: order.latitude, lng: order.longitude } : undefined,
+      };
+      
+      setWorkPhotos([...workPhotos, newPhoto]);
+
+      const photoNotification: Notification = {
+        id: `N${(notifications.length + 2).toString().padStart(3, '0')}`,
+        type: 'photo',
+        title: 'Новая фотография',
+        message: `${order.installerName} загрузил фото с объекта`,
+        from: order.installerName,
+        timestamp: 'Только что',
+        read: false,
+        orderId: selectedOrderForDetails,
+      };
+      setNotifications([photoNotification, ...notifications]);
+
+      toast({
+        title: 'Фото получено!',
+        description: `${order.installerName} загрузил новую фотографию`,
+      });
+    }, 3000);
+
+    toast({
+      title: 'Запрос отправлен!',
+      description: `${order.installerName} получит уведомление о необходимости загрузить фото`,
+    });
   };
 
   const handleSaveEstimate = (estimate: Estimate) => {
@@ -514,6 +583,18 @@ const Index = () => {
         />
       )}
 
+      {selectedOrderForDetails && (
+        <OrderDetailsDialog
+          isOpen={isOrderDetailsOpen}
+          onOpenChange={setIsOrderDetailsOpen}
+          order={orders.find(o => o.id === selectedOrderForDetails) || null}
+          location={installerLocations.find(l => l.orderId === selectedOrderForDetails) || null}
+          photos={workPhotos.filter(p => p.orderId === selectedOrderForDetails)}
+          onRefreshLocation={handleRefreshLocation}
+          onRequestPhoto={handleRequestPhoto}
+        />
+      )}
+
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 lg:w-[900px]">
@@ -540,7 +621,16 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="dashboard">
-            <DashboardTab financialStats={financialStats} orders={orders} installers={installers} />
+            <DashboardTab 
+              financialStats={financialStats} 
+              orders={orders} 
+              installers={installers}
+              locations={installerLocations}
+              onViewOrderDetails={(orderId) => {
+                setSelectedOrderForDetails(orderId);
+                setIsOrderDetailsOpen(true);
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="orders">

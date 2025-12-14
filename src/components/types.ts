@@ -12,6 +12,10 @@ export interface Order {
   installationDate?: string;
   paymentMethod?: string;
   documents?: Document[];
+  latitude?: number;
+  longitude?: number;
+  installerLocation?: InstallerLocation;
+  workPhotos?: WorkPhoto[];
 }
 
 export interface Product {
@@ -27,7 +31,7 @@ export interface Product {
 
 export interface Notification {
   id: string;
-  type: 'order' | 'payment' | 'delivery' | 'system' | 'chat';
+  type: 'order' | 'payment' | 'delivery' | 'system' | 'chat' | 'location' | 'photo';
   title: string;
   message: string;
   from: string;
@@ -66,6 +70,25 @@ export interface FinancialStats {
   avgOrderValue: number;
   ordersCount: number;
 }
+
+export const getStageLabel = (stage: WorkPhoto['stage']) => {
+  const labels = {
+    before: 'До монтажа',
+    during: 'В процессе',
+    after: 'После монтажа',
+  };
+  return labels[stage];
+};
+
+export const getLocationStatus = (status: InstallerLocation['status']) => {
+  const statuses = {
+    on_way: { label: 'В пути', color: 'bg-blue-500', icon: 'Navigation' },
+    arrived: { label: 'На объекте', color: 'bg-green-500', icon: 'MapPin' },
+    working: { label: 'Работает', color: 'bg-orange-500', icon: 'Wrench' },
+    departed: { label: 'Уехал', color: 'bg-gray-500', icon: 'CheckCircle' },
+  };
+  return statuses[status];
+};
 
 export interface EstimateItem {
   name: string;
@@ -139,4 +162,30 @@ export interface InstallerReview {
   date: string;
   orderId?: string;
   photos?: string[];
+}
+
+export interface InstallerLocation {
+  orderId: string;
+  installerId: string;
+  status: 'on_way' | 'arrived' | 'working' | 'departed';
+  arrivalTime?: string;
+  departureTime?: string;
+  currentLat?: number;
+  currentLng?: number;
+  distance?: number;
+  lastUpdate: string;
+}
+
+export interface WorkPhoto {
+  id: string;
+  orderId: string;
+  installerId: string;
+  stage: 'before' | 'during' | 'after';
+  photoUrl: string;
+  caption?: string;
+  timestamp: string;
+  location?: {
+    lat: number;
+    lng: number;
+  };
 }

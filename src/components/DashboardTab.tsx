@@ -5,15 +5,18 @@ import Icon from '@/components/ui/icon';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import FinancialAnalytics from './analytics/FinancialAnalytics';
 import BusinessInsights from './analytics/BusinessInsights';
-import { FinancialStats, Order, Installer } from './types';
+import LiveTrackingWidget from './tracking/LiveTrackingWidget';
+import { FinancialStats, Order, Installer, InstallerLocation } from './types';
 
 interface DashboardTabProps {
   financialStats: FinancialStats;
   orders?: Order[];
   installers?: Installer[];
+  locations?: InstallerLocation[];
+  onViewOrderDetails?: (orderId: string) => void;
 }
 
-const DashboardTab = ({ financialStats, orders = [], installers = [] }: DashboardTabProps) => {
+const DashboardTab = ({ financialStats, orders = [], installers = [], locations = [], onViewOrderDetails }: DashboardTabProps) => {
   return (
     <div className="animate-fade-in">
       <Tabs defaultValue="overview" className="space-y-6">
@@ -89,32 +92,12 @@ const DashboardTab = ({ financialStats, orders = [], installers = [] }: Dashboar
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon name="TrendingUp" size={20} />
-                  Активность продаж
-                </CardTitle>
-                <CardDescription>Динамика заказов за последние 7 дней</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, idx) => {
-                    const values = [45, 62, 38, 71, 55, 48, 58];
-                    return (
-                      <div key={day} className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium">{day}</span>
-                          <span className="text-muted-foreground">{values[idx]}%</span>
-                        </div>
-                        <Progress value={values[idx]} className="h-2" />
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <LiveTrackingWidget 
+              orders={orders}
+              locations={locations}
+              onViewDetails={(orderId) => onViewOrderDetails?.(orderId)}
+            />
 
             <Card>
               <CardHeader>
