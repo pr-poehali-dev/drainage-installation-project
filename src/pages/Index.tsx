@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig } from '@/components/types';
+import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig, ChatMessage, Document, FinancialStats } from '@/components/types';
 import DashboardTab from '@/components/DashboardTab';
 import OrdersTab from '@/components/OrdersTab';
 import CatalogTab from '@/components/CatalogTab';
@@ -13,15 +13,20 @@ import InstallersTab from '@/components/InstallersTab';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import EstimatePreview from '@/components/EstimatePreview';
 import PriceManagement from '@/components/PriceManagement';
+import ChatPanel from '@/components/chat/ChatPanel';
+import DocumentsPanel from '@/components/documents/DocumentsPanel';
+import AssignInstallerDialog from '@/components/orders/AssignInstallerDialog';
+import InstallationCalendar from '@/components/calendar/InstallationCalendar';
+import OrderTimeline from '@/components/orders/OrderTimeline';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orders, setOrders] = useState<Order[]>([
     { id: 'AVT-2301', client: 'Иванов Петр', phone: '+7 999 123-45-67', address: 'ул. Ленина, 45', status: 'new', amount: 0, date: '2024-12-14', product: 'Водосток + Снегозадержатели' },
-    { id: 'AVT-2302', client: 'ООО "СтройМастер"', phone: '+7 999 234-56-78', address: 'пр. Победы, 12', status: 'estimate', amount: 185000, date: '2024-12-13', product: 'Водосточная система' },
-    { id: 'AVT-2303', client: 'Сидорова Анна', phone: '+7 999 345-67-89', address: 'ул. Садовая, 8', status: 'paid', amount: 95000, date: '2024-12-12', product: 'Снегозадержатели' },
-    { id: 'AVT-2304', client: 'Петров Игорь', phone: '+7 999 456-78-90', address: 'ул. Мира, 23', status: 'delivery', amount: 220000, date: '2024-12-11', product: 'Водосток + Снегозадержатели' },
-    { id: 'AVT-2305', client: 'ИП Кузнецов', phone: '+7 999 567-89-01', address: 'ул. Кирова, 67', status: 'installation', amount: 150000, date: '2024-12-10', product: 'Водосточная система' },
+    { id: 'AVT-2302', client: 'ООО "СтройМастер"', phone: '+7 999 234-56-78', address: 'пр. Победы, 12', status: 'estimate', amount: 185000, date: '2024-12-13', product: 'Водосточная система', installerId: 'INS-002', installerName: 'ООО "КровляПрофи"', installationDate: '2024-12-18' },
+    { id: 'AVT-2303', client: 'Сидорова Анна', phone: '+7 999 345-67-89', address: 'ул. Садовая, 8', status: 'paid', amount: 95000, date: '2024-12-12', product: 'Снегозадержатели', installerId: 'INS-005', installerName: 'Дмитрий С.', installationDate: '2024-12-15' },
+    { id: 'AVT-2304', client: 'Петров Игорь', phone: '+7 999 456-78-90', address: 'ул. Мира, 23', status: 'delivery', amount: 220000, date: '2024-12-11', product: 'Водосток + Снегозадержатели', installerId: 'INS-001', installerName: 'Сергей Викторович М.', installationDate: '2024-12-16' },
+    { id: 'AVT-2305', client: 'ИП Кузнецов', phone: '+7 999 567-89-01', address: 'ул. Кирова, 67', status: 'installation', amount: 150000, date: '2024-12-10', product: 'Водосточная система', installerId: 'INS-004', installerName: 'ИП Кузнецов М.А.', installationDate: '2024-12-14' },
   ]);
   
   const [products, setProducts] = useState<Product[]>([
@@ -49,6 +54,24 @@ const Index = () => {
   const [isEstimatePreviewOpen, setIsEstimatePreviewOpen] = useState(false);
   const [currentEstimate, setCurrentEstimate] = useState<Estimate | null>(null);
   const [isPriceManagementOpen, setIsPriceManagementOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    { id: 'MSG-001', orderId: 'AVT-2302', sender: 'ООО "СтройМастер"', senderRole: 'client', message: 'Добрый день! Когда планируется начало работ?', timestamp: '10:30', read: true },
+    { id: 'MSG-002', orderId: 'AVT-2302', sender: 'Вы (Подрядчик)', senderRole: 'contractor', message: 'Здравствуйте! Монтажник выезжает 18 декабря в 9:00', timestamp: '10:35', read: true },
+    { id: 'MSG-003', orderId: 'AVT-2302', sender: 'ООО "КровляПрофи"', senderRole: 'installer', message: 'Подтверждаю выезд. Все материалы готовы?', timestamp: '11:15', read: true },
+    { id: 'MSG-004', orderId: 'AVT-2304', sender: 'Петров Игорь', senderRole: 'client', message: 'Где сейчас находится груз?', timestamp: '14:20', read: false },
+  ]);
+  const [documents, setDocuments] = useState<Document[]>([
+    { id: 'DOC-001', orderId: 'AVT-2302', type: 'contract', name: 'Договор подряда №2302', url: '/docs/contract-2302.pdf', uploadedBy: 'Система', uploadDate: '13.12.2024' },
+    { id: 'DOC-002', orderId: 'AVT-2302', type: 'invoice', name: 'Счет на оплату №2302', url: '/docs/invoice-2302.pdf', uploadedBy: 'Система', uploadDate: '13.12.2024' },
+    { id: 'DOC-003', orderId: 'AVT-2303', type: 'contract', name: 'Договор подряда №2303', url: '/docs/contract-2303.pdf', uploadedBy: 'Система', uploadDate: '12.12.2024' },
+    { id: 'DOC-004', orderId: 'AVT-2303', type: 'act', name: 'Акт выполненных работ №2303', url: '/docs/act-2303.pdf', uploadedBy: 'Дмитрий С.', uploadDate: '15.12.2024' },
+  ]);
+  const [selectedOrderForChat, setSelectedOrderForChat] = useState<string | null>(null);
+  const [selectedOrderForDocs, setSelectedOrderForDocs] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDocsOpen, setIsDocsOpen] = useState(false);
+  const [isAssignInstallerOpen, setIsAssignInstallerOpen] = useState(false);
+  const [selectedOrderForInstaller, setSelectedOrderForInstaller] = useState<string | null>(null);
 
   const [installers, setInstallers] = useState<Installer[]>([
     { id: 'INS-001', name: 'Сергей Викторович М.', city: 'Москва', phone: '+7 495 123-45-67', email: 'sergey.m@example.com', rating: 4.9, reviewsCount: 87, completedJobs: 124, experience: 8, specialization: ['both'], priceGutterInstall: 450, priceSnowGuardInstall: 1200, photo: '', description: 'Профессиональный монтаж водосточных систем и снегозадержателей. Работаю с любыми типами кровли. Даю гарантию на все работы 3 года. Выезд на замер бесплатно.', avitoUrl: 'https://www.avito.ru/moscow/predlozheniya_uslug/montazh_vodostokov', verified: true, lastActive: '5 мин назад' },
@@ -291,6 +314,88 @@ const Index = () => {
     setNotifications([newNotification, ...notifications]);
   };
 
+  const handleAssignInstaller = (orderId: string, installerId: string, installerName: string, date: string) => {
+    const updatedOrders = orders.map(o =>
+      o.id === orderId ? { ...o, installerId, installerName, installationDate: date } : o
+    );
+    setOrders(updatedOrders);
+
+    const newNotification: Notification = {
+      id: `N${(notifications.length + 1).toString().padStart(3, '0')}`,
+      type: 'order',
+      title: 'Монтажник назначен',
+      message: `На заказ ${orderId} назначен монтажник ${installerName}. Дата монтажа: ${new Date(date).toLocaleDateString('ru')}`,
+      from: 'Вы',
+      timestamp: 'Только что',
+      read: true,
+      orderId,
+    };
+    setNotifications([newNotification, ...notifications]);
+
+    toast({
+      title: 'Монтажник назначен!',
+      description: `${installerName} будет выполнять работы ${new Date(date).toLocaleDateString('ru')}`,
+    });
+  };
+
+  const handleSendMessage = (orderId: string, message: string) => {
+    const newMessage: ChatMessage = {
+      id: `MSG-${chatMessages.length + 1}`,
+      orderId,
+      sender: 'Вы (Подрядчик)',
+      senderRole: 'contractor',
+      message,
+      timestamp: new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' }),
+      read: true,
+    };
+    setChatMessages([...chatMessages, newMessage]);
+
+    toast({
+      title: 'Сообщение отправлено',
+      description: 'Участники заказа получат уведомление',
+    });
+  };
+
+  const handleGenerateDocument = (orderId: string, type: Document['type']) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const docNames = {
+      contract: `Договор ${orderId}`,
+      act: `Акт выполненных работ ${orderId}`,
+      invoice: `Счет на оплату ${orderId}`,
+      other: `Документ ${orderId}`,
+    };
+
+    const newDoc: Document = {
+      id: `DOC-${documents.length + 1}`,
+      orderId,
+      type,
+      name: docNames[type],
+      url: `/documents/${orderId}-${type}.pdf`,
+      uploadedBy: 'Вы',
+      uploadDate: new Date().toLocaleDateString('ru'),
+    };
+
+    setDocuments([...documents, newDoc]);
+
+    toast({
+      title: 'Документ сгенерирован!',
+      description: `${docNames[type]} успешно создан`,
+    });
+  };
+
+  const financialStats: FinancialStats = {
+    totalRevenue: orders.reduce((sum, o) => sum + o.amount, 0),
+    materialsExpense: orders.reduce((sum, o) => sum + o.amount * 0.45, 0),
+    installationExpense: orders.reduce((sum, o) => sum + o.amount * 0.20, 0),
+    deliveryExpense: orders.reduce((sum, o) => sum + o.amount * 0.08, 0),
+    profit: orders.reduce((sum, o) => sum + o.amount * 0.27, 0),
+    profitMargin: 27,
+    avgOrderValue: orders.length > 0 ? orders.reduce((sum, o) => sum + o.amount, 0) / orders.length : 0,
+    ordersCount: orders.length,
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
@@ -367,29 +472,75 @@ const Index = () => {
         />
       )}
 
+      <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader className="mb-4">
+            <SheetTitle>Чат по заказу</SheetTitle>
+          </SheetHeader>
+          {selectedOrderForChat && (
+            <ChatPanel
+              orderId={selectedOrderForChat}
+              messages={chatMessages.filter(m => m.orderId === selectedOrderForChat)}
+              onSendMessage={(msg) => handleSendMessage(selectedOrderForChat, msg)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={isDocsOpen} onOpenChange={setIsDocsOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader className="mb-4">
+            <SheetTitle>Документы заказа</SheetTitle>
+          </SheetHeader>
+          {selectedOrderForDocs && (
+            <DocumentsPanel
+              orderId={selectedOrderForDocs}
+              documents={documents.filter(d => d.orderId === selectedOrderForDocs)}
+              onGenerateDocument={(type) => handleGenerateDocument(selectedOrderForDocs, type)}
+              onUploadDocument={() => toast({ title: 'Функция в разработке', description: 'Скоро будет доступна загрузка файлов' })}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {selectedOrderForInstaller && (
+        <AssignInstallerDialog
+          isOpen={isAssignInstallerOpen}
+          onOpenChange={setIsAssignInstallerOpen}
+          installers={installers}
+          onAssign={(installerId, installerName, date) => 
+            handleAssignInstaller(selectedOrderForInstaller, installerId, installerName, date)
+          }
+        />
+      )}
+
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[700px]">
-            <TabsTrigger value="dashboard" className="gap-2">
+          <TabsList className="grid w-full grid-cols-5 lg:w-[900px]">
+            <TabsTrigger value="dashboard" className="gap-1 md:gap-2">
               <Icon name="LayoutDashboard" size={16} />
-              Дашборд
+              <span className="hidden sm:inline">Дашборд</span>
             </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
+            <TabsTrigger value="orders" className="gap-1 md:gap-2">
               <Icon name="Package" size={16} />
-              Заказы
+              <span className="hidden sm:inline">Заказы</span>
             </TabsTrigger>
-            <TabsTrigger value="catalog" className="gap-2">
+            <TabsTrigger value="calendar" className="gap-1 md:gap-2">
+              <Icon name="CalendarDays" size={16} />
+              <span className="hidden sm:inline">Календарь</span>
+            </TabsTrigger>
+            <TabsTrigger value="catalog" className="gap-1 md:gap-2">
               <Icon name="ShoppingCart" size={16} />
-              Каталог
+              <span className="hidden sm:inline">Каталог</span>
             </TabsTrigger>
-            <TabsTrigger value="installers" className="gap-2">
+            <TabsTrigger value="installers" className="gap-1 md:gap-2">
               <Icon name="Users" size={16} />
-              Монтажники
+              <span className="hidden sm:inline">Монтажники</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
-            <DashboardTab />
+            <DashboardTab financialStats={financialStats} orders={orders} installers={installers} />
           </TabsContent>
 
           <TabsContent value="orders">
@@ -414,6 +565,19 @@ const Index = () => {
               handleCreateNewOrder={handleCreateNewOrder}
               handleOrderAction={handleOrderAction}
               handleChangeOrderStatus={handleChangeOrderStatus}
+              onOpenChat={(orderId) => { setSelectedOrderForChat(orderId); setIsChatOpen(true); }}
+              onOpenDocs={(orderId) => { setSelectedOrderForDocs(orderId); setIsDocsOpen(true); }}
+              onAssignInstaller={(orderId) => { setSelectedOrderForInstaller(orderId); setIsAssignInstallerOpen(true); }}
+            />
+          </TabsContent>
+
+          <TabsContent value="calendar">
+            <InstallationCalendar 
+              orders={orders}
+              onOrderClick={(orderId) => {
+                setActiveTab('orders');
+                toast({ title: 'Переход к заказу', description: `Заказ ${orderId}` });
+              }}
             />
           </TabsContent>
 

@@ -29,6 +29,9 @@ interface OrdersTabProps {
   handleCreateNewOrder: () => void;
   handleOrderAction: (orderId: string) => void;
   handleChangeOrderStatus: (orderId: string, newStatus: Order['status']) => void;
+  onOpenChat?: (orderId: string) => void;
+  onOpenDocs?: (orderId: string) => void;
+  onAssignInstaller?: (orderId: string) => void;
 }
 
 const OrdersTab = ({
@@ -52,6 +55,9 @@ const OrdersTab = ({
   handleCreateNewOrder,
   handleOrderAction,
   handleChangeOrderStatus,
+  onOpenChat,
+  onOpenDocs,
+  onAssignInstaller,
 }: OrdersTabProps) => {
   return (
     <div className="animate-fade-in">
@@ -266,25 +272,75 @@ const OrdersTab = ({
                           <p className="text-2xl font-bold text-primary">
                             {order.amount > 0 ? `${order.amount.toLocaleString()} ₽` : 'Расчет...'}
                           </p>
-                        </div>
-                        <div className="flex gap-2 mt-2">
-                          {getNextStatus(order.status) && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleChangeOrderStatus(order.id, getNextStatus(order.status)!)}
-                              className="flex-1"
-                            >
-                              <Icon name="ArrowRight" size={14} className="mr-1" />
-                              {getStatusConfig(getNextStatus(order.status)!).label}
-                            </Button>
+                          {order.installerName && (
+                            <div className="mt-2 p-2 bg-purple-50 rounded-md">
+                              <p className="text-xs text-purple-900 font-medium flex items-center gap-1">
+                                <Icon name="User" size={12} />
+                                {order.installerName}
+                              </p>
+                              {order.installationDate && (
+                                <p className="text-xs text-purple-700 mt-1">
+                                  Монтаж: {new Date(order.installationDate).toLocaleDateString('ru')}
+                                </p>
+                              )}
+                            </div>
                           )}
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleOrderAction(order.id)}
-                          >
-                            <Icon name="Eye" size={14} />
-                          </Button>
+                        </div>
+                        <div className="space-y-2 mt-2">
+                          <div className="flex gap-2">
+                            {getNextStatus(order.status) && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleChangeOrderStatus(order.id, getNextStatus(order.status)!)}
+                                className="flex-1"
+                              >
+                                <Icon name="ArrowRight" size={14} className="mr-1" />
+                                {getStatusConfig(getNextStatus(order.status)!).label}
+                              </Button>
+                            )}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleOrderAction(order.id)}
+                            >
+                              <Icon name="Eye" size={14} />
+                            </Button>
+                          </div>
+                          <div className="flex gap-2">
+                            {onOpenChat && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => onOpenChat(order.id)}
+                              >
+                                <Icon name="MessageSquare" size={14} className="mr-1" />
+                                Чат
+                              </Button>
+                            )}
+                            {onOpenDocs && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => onOpenDocs(order.id)}
+                              >
+                                <Icon name="FileText" size={14} className="mr-1" />
+                                Документы
+                              </Button>
+                            )}
+                            {onAssignInstaller && !order.installerId && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => onAssignInstaller(order.id)}
+                              >
+                                <Icon name="UserPlus" size={14} className="mr-1" />
+                                Монтажник
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

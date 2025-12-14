@@ -7,6 +7,11 @@ export interface Order {
   amount: number;
   date: string;
   product: string;
+  installerId?: string;
+  installerName?: string;
+  installationDate?: string;
+  paymentMethod?: string;
+  documents?: Document[];
 }
 
 export interface Product {
@@ -22,13 +27,44 @@ export interface Product {
 
 export interface Notification {
   id: string;
-  type: 'order' | 'payment' | 'delivery' | 'system';
+  type: 'order' | 'payment' | 'delivery' | 'system' | 'chat';
   title: string;
   message: string;
   from: string;
   timestamp: string;
   read: boolean;
   orderId?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  orderId: string;
+  sender: string;
+  senderRole: 'client' | 'contractor' | 'supplier' | 'installer';
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
+
+export interface Document {
+  id: string;
+  orderId: string;
+  type: 'contract' | 'act' | 'invoice' | 'other';
+  name: string;
+  url: string;
+  uploadedBy: string;
+  uploadDate: string;
+}
+
+export interface FinancialStats {
+  totalRevenue: number;
+  materialsExpense: number;
+  installationExpense: number;
+  deliveryExpense: number;
+  profit: number;
+  profitMargin: number;
+  avgOrderValue: number;
+  ordersCount: number;
 }
 
 export interface EstimateItem {
