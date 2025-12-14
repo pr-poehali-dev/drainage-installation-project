@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
-import { Order, InstallerLocation, getLocationStatus } from '@/types';
+import { Order, InstallerLocation, getLocationStatus } from '@/types.ts';
 
 interface InstallerTrackerProps {
   order: Order;

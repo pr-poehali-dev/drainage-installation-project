@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
-import { ChatMessage } from '@/types';
+import { ChatMessage } from '@/types.ts';
 
 interface ChatPanelProps {
   orderId: string;

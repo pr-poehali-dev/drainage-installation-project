@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import Icon from '@/components/ui/icon';
-import { Installer } from '@/types';
+import { Installer } from '@/types.ts';
 
 interface InstallerCardProps {
   installer: Installer;

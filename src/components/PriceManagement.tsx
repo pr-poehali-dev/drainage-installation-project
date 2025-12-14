@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { toast } from '@/hooks/use-toast';
-import { Product } from '@/types';
+import { Product } from '@/types.ts';
 
 interface PriceManagementProps {
   products: Product[];

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { Notification } from '@/types';
+import { Notification } from '@/types.ts';
 
 interface PushNotificationProps {
   notification: Notification;

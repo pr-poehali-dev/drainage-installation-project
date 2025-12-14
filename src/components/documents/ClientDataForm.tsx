@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
-import { ClientData } from '@/types';
+import { ClientData } from '@/types.ts';
 
 interface ClientDataFormProps {
   orderId: string;

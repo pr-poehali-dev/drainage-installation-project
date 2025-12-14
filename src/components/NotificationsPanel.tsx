@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { Notification } from '@/types';
+import { Notification } from '@/types.ts';
 
 interface NotificationsPanelProps {
   notifications: Notification[];

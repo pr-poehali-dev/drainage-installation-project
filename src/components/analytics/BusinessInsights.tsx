@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
-import { Order, Installer } from '@/types';
+import { Order, Installer } from '@/types.ts';
 
 interface BusinessInsightsProps {
   orders: Order[];

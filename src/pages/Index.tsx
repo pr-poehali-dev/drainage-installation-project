@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig, ChatMessage, Document, FinancialStats, InstallerLocation, WorkPhoto, PassportData, ClientData, Rating, InventoryItem } from '@/types';
+import { Order, Product, Notification, Estimate, EstimateItem, Installer, InstallerReview, getStatusConfig, ChatMessage, Document, FinancialStats, InstallerLocation, WorkPhoto, PassportData, ClientData, Rating, InventoryItem } from '@/types.ts';
 import DashboardTab from '@/components/DashboardTab';
 import OrdersTab from '@/components/OrdersTab';
 import CatalogTab from '@/components/CatalogTab';

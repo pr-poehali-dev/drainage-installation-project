@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import { Estimate, EstimateItem } from '@/types';
+import { Estimate, EstimateItem } from '@/types.ts';
 
 interface EstimatePreviewProps {
   open: boolean;

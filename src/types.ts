@@ -1,3 +1,4 @@
+// Core interfaces
 export interface Order {
   id: string;
   client: string;
@@ -203,6 +204,7 @@ export interface WorkPhoto {
   };
 }
 
+// Helper functions
 export const getStageLabel = (stage: WorkPhoto['stage']) => {
   const labels = {
     before: 'До монтажа',

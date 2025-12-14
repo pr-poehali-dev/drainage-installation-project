@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
-import { Installer } from '@/types';
+import { Installer } from '@/types.ts';
 
 interface AssignInstallerDialogProps {
   isOpen: boolean;

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { WorkPhoto, getStageLabel } from '@/types';
+import { WorkPhoto, getStageLabel } from '@/types.ts';
 
 interface WorkPhotoGalleryProps {
   orderId: string;

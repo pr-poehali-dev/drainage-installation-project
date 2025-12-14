@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
-import { Installer, InstallerReview } from '@/types';
+import { Installer, InstallerReview } from '@/types.ts';
 
 interface InstallerDetailsDialogProps {
   isOpen: boolean;

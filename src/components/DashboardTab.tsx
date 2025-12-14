@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import FinancialAnalytics from './analytics/FinancialAnalytics';
 import BusinessInsights from './analytics/BusinessInsights';
 import LiveTrackingWidget from './tracking/LiveTrackingWidget';
-import { FinancialStats, Order, Installer, InstallerLocation } from '@/types';
+import { FinancialStats, Order, Installer, InstallerLocation } from '@/types.ts';
 
 interface DashboardTabProps {
   financialStats: FinancialStats;
